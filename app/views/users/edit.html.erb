@@ -1,0 +1,37 @@
+<% provide(:title, 'Edit user') %>
+<h1>Update your profile</h1>
+
+<div class="row">
+  <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+    <%= form_for(@user, html: { class: "form-horizontal" }) do |f| %>
+      <%= render 'shared/error_messages', object: f.object %>
+      <div class="form-group">
+        <%= f.label :name, class: "col-sm-3 control-label" %>
+        <div class="col-sm-9">
+          <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+        </div>
+      </div>
+      <div class="form-group">
+        <%= f.label :email, class: "col-sm-3 control-label" %>
+        <div class="col-sm-9">
+          <%= f.text_field :email, class: "form-control", placeholder: "Email" %>
+        </div>
+      </div>
+      <div class="form-group">
+        <%= f.label :password, class: "col-sm-3 control-label" %>
+        <div class="col-sm-9">
+          <%= f.password_field :password, class: "form-control", placeholder: "Password" %>
+        </div>
+      </div>
+      <div class="form-group">
+        <%= f.label :password_confirmation, "Confirmation", class: "col-sm-3 control-label" %>
+        <div class="col-sm-9">
+          <%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm Password" %>
+        </div>
+      </div>
+      <div class="form-actions">
+        <%= f.submit "Save changes", class: "btn btn-lg btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
