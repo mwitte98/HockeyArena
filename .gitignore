@@ -20,3 +20,4 @@
 .DS_Store
 .idea
 .secret
+/config/heroku_env.rb
