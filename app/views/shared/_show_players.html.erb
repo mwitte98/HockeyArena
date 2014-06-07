@@ -1,0 +1,58 @@
+<% provide(:title, 'Players') %>
+<div class="row">
+  <div class="col-xs-6 col-sm-offset-3">
+    <h1>Players</h1>
+  </div>
+  <div class="col-xs-6 col-sm-3">
+  	<%= link_to "Update", {:controller => :players, :action => "get_info"}, {:class => "btn btn-md btn-primary", :style => "float: right"} %>
+  </div>
+</div>
+
+<table>
+  <tr>
+  	<td>Name</td>
+  	<td>AI</td>
+  	<td>Q</td>
+  	<td>P</td>
+  	<td>T/R</td>
+    <td>Avg Min</td>
+  	<td>Goa</td>
+  	<td>Def</td>
+  	<td>Att</td>
+  	<td>Sho</td>
+  	<td>Pas</td>
+  	<td>Spe</td>
+  	<td>Str</td>
+  	<td>SCo</td>
+  	<td>Type</td>
+  	<td>Exp</td>
+    <td>Calc AI</td>
+    <td>AI Diff</td>
+  	<td>Games</td>
+  	<td>Min</td>
+  </tr>
+    <% @players.each do |player| %>
+    <tr>
+      <td><%= player.name %></td>
+      <td><%= player.ai %></td>
+      <td><%= player.quality %></td>
+      <td><%= player.potential %></td>
+      <td><%= player.stadium %></td>
+      <td><%= average_minutes(player) %></td>
+      <td><%= player.goalie %></td>
+      <td><%= player.defense %></td>
+      <td><%= player.offense %></td>
+      <td><%= player.shooting %></td>
+      <td><%= player.passing %></td>
+      <td><%= player.speed %></td>
+      <td><%= player.strength %></td>
+      <td><%= player.selfcontrol %></td>
+      <td><%= player.playertype %></td>
+      <td><%= player.experience %></td>
+      <td><%= calculate_ai(player) %></td>
+      <td><%= player.ai - calculate_ai(player) %></td>
+      <td><%= player.games %></td>
+      <td><%= player.minutes %></td>
+    </tr>
+  <% end %>
+</table>
