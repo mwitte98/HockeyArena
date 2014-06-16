@@ -38,7 +38,9 @@ gem 'uglifier', '2.5.0'
 gem 'coffee-rails', '4.0.1'
 gem 'jquery-rails', '3.1.0'
 gem 'turbolinks', '2.2.1'
+gem 'jquery-turbolinks'
 gem 'jbuilder', '2.0.7'
+gem 'jquery-datatables-rails', '~> 1.12.2'
 
 group :doc do
   gem 'sdoc', '0.4.0', require: false

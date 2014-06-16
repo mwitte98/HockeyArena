@@ -8,51 +8,55 @@
   </div>
 </div>
 
-<table>
-  <tr>
-  	<td>Name</td>
-  	<td>AI</td>
-  	<td>Q</td>
-  	<td>P</td>
-  	<td>T/R</td>
-    <td>Avg Min</td>
-  	<td>Goa</td>
-  	<td>Def</td>
-  	<td>Att</td>
-  	<td>Sho</td>
-  	<td>Pas</td>
-  	<td>Spe</td>
-  	<td>Str</td>
-  	<td>SCo</td>
-  	<td>Type</td>
-  	<td>Exp</td>
-    <td>Calc AI</td>
-    <td>AI Diff</td>
-  	<td>Games</td>
-  	<td>Min</td>
-  </tr>
-    <% @players.each do |player| %>
+<table id="players">
+  <thead>
     <tr>
-      <td><%= player.name %></td>
-      <td><%= player.ai %></td>
-      <td><%= player.quality %></td>
-      <td><%= player.potential %></td>
-      <td><%= player.stadium %></td>
-      <td><%= average_minutes(player) %></td>
-      <td><%= player.goalie %></td>
-      <td><%= player.defense %></td>
-      <td><%= player.offense %></td>
-      <td><%= player.shooting %></td>
-      <td><%= player.passing %></td>
-      <td><%= player.speed %></td>
-      <td><%= player.strength %></td>
-      <td><%= player.selfcontrol %></td>
-      <td><%= player.playertype %></td>
-      <td><%= player.experience %></td>
-      <td><%= calculate_ai(player) %></td>
-      <td><%= player.ai - calculate_ai(player) %></td>
-      <td><%= player.games %></td>
-      <td><%= player.minutes %></td>
+      <th>Name</th>
+      <th>AI</th>
+      <th>Q</th>
+      <th>P</th>
+      <th>T/R</th>
+      <th>Avg Min</th>
+      <th>Goa</th>
+      <th>Def</th>
+      <th>Att</th>
+      <th>Sho</th>
+      <th>Pas</th>
+      <th>Spe</th>
+      <th>Str</th>
+      <th>SCo</th>
+      <th>Type</th>
+      <th>Exp</th>
+      <th>Calc AI</th>
+      <th>AI Diff</th>
+      <th>Games</th>
+      <th>Min</th>
     </tr>
-  <% end %>
+  </thead>
+  <tbody>
+    <% @players.each do |player| %>
+      <tr>
+        <td><%= player.name %></td>
+        <td><%= player.ai %></td>
+        <td><%= player.quality %></td>
+        <td><%= player.potential %></td>
+        <td><%= player.stadium %></td>
+        <td><%= average_minutes(player) %></td>
+        <td><%= player.goalie %></td>
+        <td><%= player.defense %></td>
+        <td><%= player.offense %></td>
+        <td><%= player.shooting %></td>
+        <td><%= player.passing %></td>
+        <td><%= player.speed %></td>
+        <td><%= player.strength %></td>
+        <td><%= player.selfcontrol %></td>
+        <td><%= player.playertype %></td>
+        <td><%= player.experience %></td>
+        <td><%= calculate_ai(player) %></td>
+        <td><%= player.ai - calculate_ai(player) %></td>
+        <td><%= player.games %></td>
+        <td><%= player.minutes %></td>
+      </tr>
+    <% end %>
+  </tbody>
 </table>
