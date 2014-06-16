@@ -32,8 +32,9 @@ textarea {
 }
 
 table {
-  td {
-    padding: 0 0 0 15px;
+  td, th {
+    padding-right: 15px;
+    white-space: nowrap;
   }
 }
 
