@@ -29,15 +29,15 @@ class PlayersController < ApplicationController
     form.submit
 
     for i in 2..ws20.num_rows()
-      update_player(ws20, i, agent)
+      agent = update_player(ws20, i, agent)
     end
 
     for a in 2..ws18.num_rows()
-      update_player(ws18, a, agent)
+      agent = update_player(ws18, a, agent)
     end
 
     for b in 2..ws_cuts.num_rows()
-      update_player(ws_cuts, b, agent)
+      agent = update_player(ws_cuts, b, agent)
     end
 
     redirect_to players5354_path
@@ -108,6 +108,8 @@ class PlayersController < ApplicationController
       ws[i,5] = stadium_info[3][0..2] #stadium
 
       ws.synchronize() #save and reload
+
+      return agent
     end
 
 end
