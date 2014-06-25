@@ -10,7 +10,7 @@ class User < ActiveRecord::Base
   validate :certain_email
 
   def certain_email
-  	unless (email.downcase == "mcw9612@rit.edu") || (email.downcase == "tyler.azevedo@gmail.com")
+  	unless (email.downcase == "mcw9612@rit.edu") || (email.downcase == "tyler.azevedo@gmail.com") || (email.downcase == "ha32085@gmail.com")
   	  errors.add(:email, "doesn't have permission to sign up for this site")
   	end
   end

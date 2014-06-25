@@ -4,7 +4,11 @@
     <h1>Players</h1>
   </div>
   <div class="col-xs-6 col-sm-3">
-  	<%= link_to "Update", {:controller => :players, :action => "get_info"}, {:class => "btn btn-md btn-primary", :style => "float: right"} %>
+    <table>
+      <td><%= link_to "Update NT", {:controller => :players, :action => "login_HA"}, {:class => "btn btn-md btn-primary", :style => "float: right"} %></td>
+      <td></td>
+  	  <td><%= link_to "Update U20", {:controller => :players, :action => "get_info"}, {:class => "btn btn-md btn-primary", :style => "float: right"} %></td>
+    </table>
   </div>
 </div>
 
