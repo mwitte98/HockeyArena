@@ -17,14 +17,17 @@ class PlayersController < ApplicationController
 
   def get_info
     #Login to Google
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5354 = session.spreadsheet_by_key(ENV['5354_key'])
     ws20 = doc5354.worksheet_by_title("20")
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
     ws18 = doc5556.worksheet_by_title("Players18")
     ws_cuts = doc5556.worksheet_by_title("Cuts")
+    total_players = ws20.num_rows() + ws18.num_rows() + ws_cuts.num_rows() - 3
 
     #Login to HA
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
     agent = Mechanize.new
     agent.get("http://www.hockeyarena.net/en/")
     form = agent.page.forms.first
@@ -34,14 +37,17 @@ class PlayersController < ApplicationController
 
     for i in 2..ws20.num_rows()
       agent = update_player(ws20, i, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws20[i,1]}", progress: (i-1.0)/total_players*100 })
     end
 
     for a in 2..ws18.num_rows()
       agent = update_player(ws18, a, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws18[a,1]}", progress: (ws20.num_rows()+a-2.0)/total_players*100 })
     end
 
     for b in 2..ws_cuts.num_rows()
       agent = update_player(ws_cuts, b, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws_cuts[b,1]}", progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
     end
 
     redirect_to players5354_path
@@ -49,11 +55,14 @@ class PlayersController < ApplicationController
 
   def get_NT_info
     #Login to Google
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     docNT = session.spreadsheet_by_key(ENV['NT_key'])
     wsNT = docNT.worksheet_by_title("Players")
+    total_players = wsNT.num_rows()
 
     #Login to HA
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
     agent = Mechanize.new
     agent.get("http://www.hockeyarena.net/en/")
     form = agent.page.forms.first
@@ -68,8 +77,9 @@ class PlayersController < ApplicationController
     end
     my_team = team_info[3]
 
-    for i in 2..wsNT.num_rows()
+    for i in 2..total_players
       agent = update_NT_player(wsNT, my_team, i, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{wsNT[i,1]}", progress: (i-1.0)/total_players*100 })
     end
 
     redirect_to players5354_path
