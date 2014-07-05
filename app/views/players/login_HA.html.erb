@@ -1,9 +1,31 @@
 <% provide(:title, "Login to HA") %>
+
+<head>
+  <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var pusher = new Pusher('32ec4577289f4af8bf3b');
+      var channel = pusher.subscribe('players_channel');
+      channel.bind('update', function(data) {
+        var messageBox = $('#create-account-form-with-realtime').children('.messages')
+        var progressBar = $('#realtime-progress-bar')
+
+        progressBar.width(data.progress+"%")
+        messageBox.html(data.message)
+      });
+    })
+  </script>
+</head>
+
 <h1>Login to HA</h1>
 
 <div class="row">
   <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-    <%= form_tag(controller: :players, action: :get_NT_info) do %>
+    <%= form_tag({controller: :players, action: :get_NT_info}, id: "create-account-form-with-realtime") do %>
+      <div class="progress progress-striped active">
+        <div class="progress-bar progress-bar-info" id='realtime-progress-bar' style="width: 0%"></div>
+      </div>
+      <p class="messages"></p>
       <div class="form-group">
       	<%= label_tag(:username, "Username", class: "col-sm-3 control-label") %>
       	<div class="col-sm-9">
