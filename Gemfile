@@ -14,6 +14,7 @@ gem 'nokogiri', '~> 1.6.2.1'
 gem 'mechanize', '2.7.2'
 gem 'google_drive'
 gem 'newrelic_rpm'
+gem 'pusher'
 
 group :development, :test do
   gem 'sqlite3', '1.3.9'
