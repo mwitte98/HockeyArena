@@ -40,15 +40,15 @@ class PlayersController < ApplicationController
       Pusher.trigger('players_channel', 'update', { message: "Updated #{ws20[i,1]}", progress: (i-1.0)/total_players*100 })
     end
 
-    # for a in 2..ws18.num_rows()
-    #   agent = update_player(ws18, a, agent)
-    #   Pusher.trigger('players_channel', 'update', { message: "Updated #{ws18[a,1]}", progress: (ws20.num_rows()+a-2.0)/total_players*100 })
-    # end
+    for a in 2..ws18.num_rows()
+      agent = update_player(ws18, a, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws18[a,1]}", progress: (ws20.num_rows()+a-2.0)/total_players*100 })
+    end
 
-    # for b in 2..ws_cuts.num_rows()
-    #   agent = update_player(ws_cuts, b, agent)
-    #   Pusher.trigger('players_channel', 'update', { message: "Updated #{ws_cuts[b,1]}", progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
-    # end
+    for b in 2..ws_cuts.num_rows()
+      agent = update_player(ws_cuts, b, agent)
+      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws_cuts[b,1]}", progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
+    end
 
     redirect_to players5354_path
   end

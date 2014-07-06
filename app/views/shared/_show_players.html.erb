@@ -4,11 +4,11 @@
   <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      var pusher = new Pusher('32ec4577289f4af8bf3b');
+      var pusher = new Pusher('<%=escape_javascript ENV['pusher_key'] %>');
       var channel = pusher.subscribe('players_channel');
       channel.bind('update', function(data) {
-        var messageBox = $('#create-account-form-with-realtime').children('.messages')
-        var progressBar = $('#realtime-progress-bar')
+        var messageBox = $('#progress-bar-form').children('.messages')
+        var progressBar = $('#progress-bar')
 
         progressBar.width(data.progress+"%")
         messageBox.html(data.message)
@@ -27,16 +27,16 @@
         <%= link_to "Update NT", {controller: :players, action: "login_HA"}, {class: "btn btn-md btn-primary", style: "float: right"} %>
       </td>
       <td></td>
-  	  <td>
+      <td>
         <%= link_to "Update U20", {controller: :players, action: "get_info"}, {class: "btn btn-md btn-primary", style: "float: right"} %>
       </td>
     </table>
   </div>
 </div>
 
-<%= form_tag({controller: :players, action: :get_info}, method: "post", id: "create-account-form-with-realtime") do %>
+<%= form_tag({controller: :players, action: :get_info}, method: "post", id: "progress-bar-form") do %>
   <div class="progress progress-striped active">
-    <div class="progress-bar progress-bar-info" id='realtime-progress-bar' style="width: 0%"></div>
+    <div class="progress-bar progress-bar-info" id='progress-bar' style="width: 0%"></div>
   </div>
   <p class="messages"></p>
 <% end %>
