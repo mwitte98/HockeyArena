@@ -36,18 +36,24 @@ class PlayersController < ApplicationController
     form.submit
 
     for i in 2..ws20.num_rows()
+      player_number = i - 1
+      string = "Updating #{ws20[i,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (i-1.0)/total_players*100 })
       agent = update_player(ws20, i, agent)
-      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws20[i,1]}", progress: (i-1.0)/total_players*100 })
     end
 
     for a in 2..ws18.num_rows()
+      player_number = ws20.num_rows() + a - 2
+      string = "Updating #{ws18[a,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (ws20.num_rows()+a-2.0)/total_players*100 })
       agent = update_player(ws18, a, agent)
-      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws18[a,1]}", progress: (ws20.num_rows()+a-2.0)/total_players*100 })
     end
 
     for b in 2..ws_cuts.num_rows()
+      player_number = ws20.num_rows() + ws18.num_rows() + b - 3
+      string = "Updating #{ws_cuts[b,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
       agent = update_player(ws_cuts, b, agent)
-      Pusher.trigger('players_channel', 'update', { message: "Updated #{ws_cuts[b,1]}", progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
     end
 
     redirect_to players5354_path
@@ -60,6 +66,7 @@ class PlayersController < ApplicationController
     docNT = session.spreadsheet_by_key(ENV['NT_key'])
     wsNT = docNT.worksheet_by_title("Players")
     total_players = wsNT.num_rows()
+    total_players_number = total_players - 1
 
     #Login to HA
     Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
@@ -78,8 +85,10 @@ class PlayersController < ApplicationController
     my_team = team_info[3]
 
     for i in 2..total_players
+      player_number = i - 1
+      string = "Updating #{wsNT[i,1]} (#{player_number} of #{total_players_number})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (i-1.0)/total_players*100 })
       agent = update_NT_player(wsNT, my_team, i, agent)
-      Pusher.trigger('players_channel', 'update', { message: "Updated #{wsNT[i,1]}", progress: (i-1.0)/total_players*100 })
     end
 
     redirect_to players5354_path
@@ -177,7 +186,7 @@ class PlayersController < ApplicationController
         ws[i,15] = strip_percent(player_info[19]) #sco
         ws[i,17] = strip_percent(player_info[23]) #exp
 
-        if player_info[3] == my_team
+        if player_info[3] == my_team[0..-2]
           ws[i,22] = player_info[32] #games
           ws[i,23] = player_info[34] #min
         else
