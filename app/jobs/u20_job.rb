@@ -41,6 +41,8 @@ class U20Job
       Pusher.trigger('players_channel', 'update', { message: string, progress: (ws20.num_rows()+ws18.num_rows()+b-3.0)/total_players*100 })
       agent = update_player(ws_cuts, b, agent)
     end
+
+    Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
 
   private
