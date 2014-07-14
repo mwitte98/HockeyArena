@@ -1,7 +1,7 @@
 class NTJob
   include SuckerPunch::Job
 
-  def perform()
+  def perform(username, password)
   	#Login to Google
     Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
@@ -15,8 +15,8 @@ class NTJob
     agent = Mechanize.new
     agent.get("http://www.hockeyarena.net/en/")
     form = agent.page.forms.first
-    form.nick = params[:username]
-    form.password = params[:password]
+    form.nick = username
+    form.password = password
     form.submit
 
     agent.get("http://www.hockeyarena.net/en/index.php?p=manager_summary.php")
@@ -32,6 +32,8 @@ class NTJob
       Pusher.trigger('players_channel', 'update', { message: string, progress: (i-1.0)/total_players*100 })
       agent = update_NT_player(wsNT, my_team, i, agent)
     end
+
+    Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
 
   private

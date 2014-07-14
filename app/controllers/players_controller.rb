@@ -22,9 +22,9 @@ class PlayersController < ApplicationController
   end
 
   def get_NT_info
-    NTJob.new.async.perform()
+    @players = []
+    NTJob.new.async.perform(params[:username], params[:password])
     flash[:success] = "NT players are being updated!"
-    redirect_to players5354_path
   end
 
   private
