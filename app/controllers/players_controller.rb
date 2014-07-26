@@ -17,14 +17,13 @@ class PlayersController < ApplicationController
 
   def get_info
     U20Job.new.async.perform()
-    flash[:success] = "U20 players are being updated!"
     redirect_to players5354_path
   end
 
   def get_NT_info
     @players = []
     NTJob.new.async.perform(params[:username], params[:password])
-    flash[:success] = "NT players are being updated!"
+    redirect_to players5354_path
   end
 
   private

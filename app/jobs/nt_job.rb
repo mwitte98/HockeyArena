@@ -92,7 +92,12 @@ class NTJob
       agent.page.search(".sr1 .yspscores").each do |info|
         stadium_info << info.text.strip
       end
-      ws[i,6] = stadium_info[3][0..2] #stadium
+
+      if stadium_info[3][0] == "0" #stadium-training
+        ws[i,6] = 0
+      else
+        ws[i,6] = stadium_info[3][0..2]
+      end
 
       ws.synchronize() #save and reload
 

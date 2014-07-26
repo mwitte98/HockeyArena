@@ -100,7 +100,12 @@ class U20Job
       agent.page.search(".sr1 .yspscores").each do |info|
         stadium_info << info.text.strip
       end
-      ws[i,5] = stadium_info[3][0..2] #stadium
+
+      if stadium_info[3][0] == "0" #stadium-training
+      	ws[i,5] = 0
+      else
+        ws[i,5] = stadium_info[3][0..2]
+      end
 
       ws.synchronize() #save and reload
 
