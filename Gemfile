@@ -19,7 +19,7 @@ gem 'sucker_punch'
 
 group :development, :test do
   gem 'sqlite3', '1.3.9'
-  gem 'rspec-rails', '2.14.2'
+  gem 'rspec-rails', '~> 3.0.1'
   # The following optional lines are part of the advanced setup.
   gem 'guard-rspec', '4.2.9'
   gem 'spork-rails', '4.0.0'
