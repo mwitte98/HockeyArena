@@ -6,27 +6,23 @@ class U20Job
     Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
-    ws = doc5556.worksheet_by_title("Players18")
-    # ws_cuts = doc5556.worksheet_by_title("Cuts")
-    total_players = ws.num_rows() - 1 #+ ws_cuts.num_rows() - 2
+    ws18 = doc5556.worksheet_by_title("Players18")
+    total_players = ws18.num_rows() - 1
 
     #Login to HA
-    # Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
-    # agent = Mechanize.new
-    # agent.get("http://www.hockeyarena.net/en/")
-    # form = agent.page.forms.first
-    # form.nick = ENV['HA_nick']
-    # form.password = ENV['HA_password']
-    # form.submit
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
+    agent = Mechanize.new
+    agent.get("http://www.hockeyarena.net/en/")
+    form = agent.page.forms.first
+    form.nick = ENV['HA_nick']
+    form.password = ENV['HA_password']
+    form.submit
 
-    for i in 2..ws.num_rows()
-      player_number = i - 1
-      string = "Updating #{ws[i,1]} (#{player_number} of #{total_players})"
-      Pusher.trigger('players_channel', 'update', { message: string, progress: (i-1.0)/total_players*100 })
-      Player.create!(playerid: ws[i,27], name: ws[i,1], age: "18", ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
-        stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
-        strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
-      #agent = update_player(ws18, a, agent)
+    for a in 2..ws18.num_rows()
+      player_number = a - 1
+      string = "Updating #{ws18[a,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (a-1.0)/total_players*100 })
+      agent = update_player(ws18, a, agent)
     end
 
     # for b in 2..ws_cuts.num_rows()
