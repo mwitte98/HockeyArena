@@ -1,14 +1,12 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  def show5354
-    #@players = Player.order("ai DESC").all(:conditions => ["age != ?", 17])
-    @players = []
-  end
+  # def show5354
+  #   @players = Player.order("ai DESC").all(:conditions => ["age = ?", 19]).uniq
+  # end
 
   def show5556
-    #@players = Player.order("ai DESC").all(:conditions => ["age = ?", 17])
-    @players = []
+    @players = Player.order("ai DESC").all(:conditions => ["age = ?", 18]).uniq
   end
 
   def login_HA
@@ -17,13 +15,13 @@ class PlayersController < ApplicationController
 
   def get_info
     U20Job.new.async.perform()
-    redirect_to players5354_path
+    redirect_to players5556_path
   end
 
   def get_NT_info
     @players = []
     NTJob.new.async.perform(params[:username], params[:password])
-    redirect_to players5354_path
+    redirect_to players5556_path
   end
 
   private
