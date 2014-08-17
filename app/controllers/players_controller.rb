@@ -6,7 +6,7 @@ class PlayersController < ApplicationController
   # end
 
   def show5556
-    @players = Player.order("ai DESC").all(:conditions => ["age = ?", 18]).uniq
+    @players = Player.order("id DESC").all(:conditions => ["age = ?", 18]).uniq
   end
 
   def login_HA
