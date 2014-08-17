@@ -2,3 +2,8 @@
 # All this logic will automatically be available in application.js.
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
+jQuery ->
+  $('#players').dataTable( {
+    "iDisplayLength": 100,
+    "aaSorting": [[1, 'desc']]
+  } );
