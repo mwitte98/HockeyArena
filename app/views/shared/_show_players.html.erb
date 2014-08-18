@@ -69,7 +69,7 @@
   <tbody>
     <% @players.each do |player| %>
       <tr>
-        <td><%= player.name %></td>
+        <td><%= link_to player.name, player_path(player) %></td>
         <td><%= player.ai %></td>
         <td><%= player.quality %></td>
         <td><%= player.potential %></td>
