@@ -1,0 +1,52 @@
+<% provide(:title, @player.name) %>
+<h2><%= @player.name %></h2>
+<h4><%= @player.playertype %>: <%= @player.quality %>/<%= @player.potential %></h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>AI</th>
+      <th>T/R</th>
+      <th>Avg Min</th>
+      <th>Goa</th>
+      <th>Def</th>
+      <th>Att</th>
+      <th>Sho</th>
+      <th>Pas</th>
+      <th>Spe</th>
+      <th>Str</th>
+      <th>SCo</th>
+      <th>Type</th>
+      <th>Exp</th>
+      <th>Calc AI</th>
+      <th>AI Diff</th>
+      <th>Games</th>
+      <th>Min</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @players.each do |player| %>
+      <tr>
+        <td><%= player.ai %></td>
+        <td><%= player.stadium %></td>
+        <td><%= average_minutes(player) %></td>
+        <td><%= player.goalie %></td>
+        <td><%= player.defense %></td>
+        <td><%= player.offense %></td>
+        <td><%= player.shooting %></td>
+        <td><%= player.passing %></td>
+        <td><%= player.speed %></td>
+        <td><%= player.strength %></td>
+        <td><%= player.selfcontrol %></td>
+        <td><%= player.playertype %></td>
+        <td><%= player.experience %></td>
+        <td><%= calculate_ai(player) %></td>
+        <td><%= player.ai - calculate_ai(player) %></td>
+        <td><%= player.games %></td>
+        <td><%= player.minutes %></td>
+        <td><%= player.created_at %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
