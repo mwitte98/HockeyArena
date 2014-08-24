@@ -1,12 +1,12 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  # def show5354
-  #   @players = Player.order("ai DESC").all(:conditions => ["age = ?", 19]).uniq
-  # end
-
   def show5556
     @players = Player.order("id DESC").all(conditions: ["age = ?", 19]).uniq
+  end
+
+  def show5758
+    @players = Player.order("id DESC").all(conditions: ["age = ?", 17]).uniq
   end
 
   def show

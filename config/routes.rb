@@ -1,13 +1,13 @@
 Rails.application.routes.draw do
-  resources :users,        only: [:new, :create, :update, :edit]
-  resources :sessions,     only: [:new, :create, :destroy]
-  resources :players,      only: [:show]
+  resources :users,        only: [:new,  :create, :update, :edit]
+  resources :sessions,     only: [:new,  :create, :destroy]
+  resources :players,      only: [:show, :destroy]
   root 'static_pages#home'
   match '/signup',      to: 'users#new',           via: 'get'
   match '/signin',      to: 'sessions#new',        via: 'get'
   match '/signout',     to: 'sessions#destroy',    via: 'delete'
-  # match '/players5354', to: 'players#show5354',    via: 'get'
   match '/players5556', to: 'players#show5556',    via: 'get'
+  match '/players5758', to: 'players#show5758',    via: 'get'
   match '/get_info',    to: 'players#get_info',    via: 'get'
   match '/get_NT_info', to: 'players#get_NT_info', via: 'post'
   match '/login_HA',    to: 'players#login_HA',    via: 'get'
