@@ -14,6 +14,12 @@ class PlayersController < ApplicationController
     @players = Player.order("id DESC").all(conditions: ["name = ?", @player.name])
   end
 
+  def destroy
+    Player.find(params[:id]).destroy
+    flash[:success] = "Player deleted."
+    redirect_to :back
+  end
+
   def login_HA
     
   end
