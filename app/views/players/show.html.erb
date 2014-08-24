@@ -23,6 +23,7 @@
       <th>Games</th>
       <th>Min</th>
       <th>Date</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -45,7 +46,8 @@
         <td><%= player.ai - calculate_ai(player) %></td>
         <td><%= player.games %></td>
         <td><%= player.minutes %></td>
-        <td><%= player.created_at %></td>
+        <td><%= player.created_at.strftime("%m/%d/%Y %I:%M%p") %></td>
+        <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure?" } %></td>
       </tr>
     <% end %>
   </tbody>
