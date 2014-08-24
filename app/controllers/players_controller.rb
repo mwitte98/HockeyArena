@@ -6,7 +6,7 @@ class PlayersController < ApplicationController
   # end
 
   def show5556
-    @players = Player.order("id DESC").all(conditions: ["age = ?", 18]).uniq
+    @players = Player.order("id DESC").all(conditions: ["age = ?", 19]).uniq
   end
 
   def show

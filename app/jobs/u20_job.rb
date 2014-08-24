@@ -6,7 +6,7 @@ class U20Job
     Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
-    ws18 = doc5556.worksheet_by_title("Players18")
+    ws18 = doc5556.worksheet_by_title("Players19")
     total_players = ws18.num_rows() - 1
 
     #Login to HA
