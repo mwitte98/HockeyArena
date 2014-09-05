@@ -29,6 +29,11 @@ class PlayersController < ApplicationController
     redirect_to players5556_path
   end
 
+  def get_U20_info
+    NewU20Job.new.async.perform()
+    redirect_to players5556_path
+  end
+
   def get_NT_info
     @players = []
     NTJob.new.async.perform(params[:username], params[:password])

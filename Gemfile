@@ -16,6 +16,7 @@ gem 'google_drive'
 gem 'newrelic_rpm'
 gem 'pusher'
 gem 'sucker_punch'
+gem 'clockwork'
 
 group :development, :test do
   gem 'sqlite3', '1.3.9'
