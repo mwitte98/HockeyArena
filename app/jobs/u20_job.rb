@@ -7,7 +7,9 @@ class U20Job
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
     ws18 = doc5556.worksheet_by_title("Players19")
-    total_players = ws18.num_rows() - 1
+    doc5758 = session.spreadsheet_by_key(ENV['5758_key'])
+    ws17 = doc5758.worksheet_by_title("Players17")
+    total_players = ws18.num_rows() + ws17.num_rows() - 2
 
     #Login to HA
     Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
@@ -25,12 +27,12 @@ class U20Job
       agent = update_player(ws18, a, agent)
     end
 
-    # for b in 2..ws_cuts.num_rows()
-    #   player_number = ws18.num_rows() + b - 2
-    #   string = "Updating #{ws_cuts[b,1]} (#{player_number} of #{total_players})"
-    #   Pusher.trigger('players_channel', 'update', { message: string, progress: (ws18.num_rows()+b-2.0)/total_players*100 })
-    #   agent = update_player(ws_cuts, b, agent)
-    # end
+    for b in 2..ws17.num_rows()
+      player_number = ws18.num_rows() + b - 2
+      string = "Updating #{ws17[b,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: (ws18.num_rows()+b-2.0)/total_players*100 })
+      agent = update_player(ws17, b, agent)
+    end
 
     Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
@@ -50,7 +52,7 @@ class U20Job
     end
 
     def update_player(ws, i, agent)
-      id = ws[i,27]
+      id = ws[i,28]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
 
       player_info = []
@@ -97,7 +99,7 @@ class U20Job
         ws[i,5] = stadium_info[3][0..2]
       end
 
-      Player.create!(playerid: ws[i,27], name: ws[i,1], age: player_info[0], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
+      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[0], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
         stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
         strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
 

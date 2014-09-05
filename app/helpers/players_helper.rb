@@ -9,6 +9,10 @@ module PlayersHelper
   end
 
   def calculate_ai(player)
-  	return player.goalie + player.defense + player.offense + player.shooting + player.passing + player.speed + player.strength + player.selfcontrol
+    if player.goalie.nil?
+      return 0
+    else
+  	  return player.goalie + player.defense + player.offense + player.shooting + player.passing + player.speed + player.strength + player.selfcontrol
+    end
   end
 end
