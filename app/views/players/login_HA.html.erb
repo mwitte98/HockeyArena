@@ -4,7 +4,7 @@
   <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      var pusher = new Pusher('<%=escape_javascript ENV['pusher_key'] %>');
+      var pusher = new Pusher('<%=escape_javascript ENV['pusher_key'] %>', { encrypted: true });
       var channel = pusher.subscribe('players_channel');
       channel.bind('update', function(data) {
         var messageBox = $('#progress-bar-form').children('.messages')
