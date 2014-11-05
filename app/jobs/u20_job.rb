@@ -6,9 +6,9 @@ class U20Job
     Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
-    ws18 = doc5556.worksheet_by_title("Players19")
+    ws18 = doc5556.worksheet_by_title("Players20")
     doc5758 = session.spreadsheet_by_key(ENV['5758_key'])
-    ws17 = doc5758.worksheet_by_title("Players17")
+    ws17 = doc5758.worksheet_by_title("Players18")
     total_players = ws18.num_rows() + ws17.num_rows() - 2
 
     #Login to HA
@@ -24,14 +24,22 @@ class U20Job
       player_number = a - 1
       string = "Updating #{ws18[a,1]} (#{player_number} of #{total_players})"
       Pusher.trigger('players_channel', 'update', { message: string, progress: (a-1.0)/total_players*100 })
-      agent = update_player(ws18, a, agent)
+      begin
+        agent = update_player(ws18, a, agent)
+      rescue Nokogiri::XML::XPath::SyntaxError => e
+        puts "**********Happening here in first loop**********"
+      end
     end
 
     for b in 2..ws17.num_rows()
       player_number = ws18.num_rows() + b - 2
       string = "Updating #{ws17[b,1]} (#{player_number} of #{total_players})"
       Pusher.trigger('players_channel', 'update', { message: string, progress: (ws18.num_rows()+b-2.0)/total_players*100 })
-      agent = update_player(ws17, b, agent)
+      begin
+        agent = update_player(ws17, b, agent)
+      rescue Nokogiri::XML::XPath::SyntaxError => e
+        puts "**********Happening here in second loop**********"
+      end
     end
 
     Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
