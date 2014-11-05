@@ -2,11 +2,11 @@ class PlayersController < ApplicationController
   before_action :signed_in_user
 
   def show5556
-    @players = Player.order("id DESC").all(conditions: ["age = ?", 19]).uniq
+    @players = Player.order("id DESC").all(conditions: ["age = ?", 20]).uniq
   end
 
   def show5758
-    @players = Player.order("id DESC").all(conditions: ["age = ?", 17]).uniq
+    @players = Player.order("id DESC").all(conditions: ["age = ?", 18]).uniq
   end
 
   def show
