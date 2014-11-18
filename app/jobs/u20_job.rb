@@ -68,7 +68,7 @@ class U20Job
         player_info << info.text.strip
       end
 
-      ws[i,2] = player_info[1] #ai
+      ws[i,2] = player_info[0] #ai
 
       # FIX THIS SIZE VALUE
       if player_info.size > 35 #player is scouted
@@ -82,7 +82,7 @@ class U20Job
         ws[i,14] = strip_percent(player_info[21]) #sco
         ws[i,16] = strip_percent(player_info[25]) #exp
 
-        if player_info[3] == "RIT Tigers"
+        if player_info[5] == "RIT Tigers"
           ws[i,21] = player_info[37] #games
           ws[i,22] = player_info[39] #min
         else
