@@ -27,7 +27,7 @@ class U20Job
       begin
         agent = update_player(ws18, a, agent)
       rescue Nokogiri::XML::XPath::SyntaxError => e
-        puts "**********Happening here in first loop**********"
+        puts "**********Happening here in first loop: #{ws18[a,1]}**********"
       end
     end
 
@@ -38,7 +38,7 @@ class U20Job
       begin
         agent = update_player(ws17, b, agent)
       rescue Nokogiri::XML::XPath::SyntaxError => e
-        puts "**********Happening here in second loop**********"
+        puts "**********Happening here in second loop: #{ws17[b,1]}**********"
       end
     end
 
@@ -64,36 +64,37 @@ class U20Job
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
 
       player_info = []
-      agent.page.search(".q").each do |info|
+      agent.page.search(".q1, .q").each do |info|
         player_info << info.text.strip
       end
 
-      ws[i,2] = player_info[8] #ai
+      ws[i,2] = player_info[1] #ai
 
+      # FIX THIS SIZE VALUE
       if player_info.size > 35 #player is scouted
-        ws[i,7] = strip_percent(player_info[14]) #goa
-        ws[i,8] = strip_percent(player_info[16]) #def
-        ws[i,9] = strip_percent(player_info[18]) #off
-        ws[i,10] = strip_percent(player_info[20]) #shot
-        ws[i,11] = strip_percent(player_info[22]) #pass
-        ws[i,12] = strip_percent(player_info[15]) #spd
-        ws[i,13] = strip_percent(player_info[17]) #str
-        ws[i,14] = strip_percent(player_info[19]) #sco
-        ws[i,16] = strip_percent(player_info[23]) #exp
+        ws[i,7] = strip_percent(player_info[16]) #goa
+        ws[i,8] = strip_percent(player_info[18]) #def
+        ws[i,9] = strip_percent(player_info[20]) #off
+        ws[i,10] = strip_percent(player_info[22]) #shot
+        ws[i,11] = strip_percent(player_info[24]) #pass
+        ws[i,12] = strip_percent(player_info[17]) #spd
+        ws[i,13] = strip_percent(player_info[19]) #str
+        ws[i,14] = strip_percent(player_info[21]) #sco
+        ws[i,16] = strip_percent(player_info[25]) #exp
 
         if player_info[3] == "RIT Tigers"
-          ws[i,21] = player_info[32] #games
-          ws[i,22] = player_info[34] #min
+          ws[i,21] = player_info[37] #games
+          ws[i,22] = player_info[39] #min
         else
-          ws[i,21] = player_info[29] #games
-          ws[i,22] = player_info[31] #min
+          ws[i,21] = player_info[31] #games
+          ws[i,22] = player_info[33] #min
         end
       else #player isn't scouted
-        ws[i,21] = player_info[17] #games
-        ws[i,22] = player_info[19] #min
+        ws[i,21] = player_info[19] #games
+        ws[i,22] = player_info[21] #min
       end
 
-      agent.page.link_with(:text => player_info[3]).click
+      agent.page.link_with(:text => player_info[5]).click
       teamid = agent.page.uri.to_s[77..-1]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{teamid}")
       stadium_info = []
@@ -107,11 +108,15 @@ class U20Job
         ws[i,5] = stadium_info[3][0..2]
       end
 
-      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[0], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
+      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[2], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
         stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
         strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
 
-      ws.synchronize() #save and reload
+      begin
+        ws.synchronize() #save and reload
+      rescue GoogleDrive::Error => e
+        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
+      end
 
       return agent
     end
