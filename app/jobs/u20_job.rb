@@ -83,8 +83,8 @@ class U20Job
         ws[i,16] = strip_percent(player_info[25]) #exp
 
         if player_info[5] == "RIT Tigers"
-          ws[i,21] = player_info[37] #games
-          ws[i,22] = player_info[39] #min
+          ws[i,21] = player_info[34] #games
+          ws[i,22] = player_info[36] #min
         else
           ws[i,21] = player_info[31] #games
           ws[i,22] = player_info[33] #min
