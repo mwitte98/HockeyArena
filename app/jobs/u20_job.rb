@@ -6,13 +6,14 @@ class U20Job
     Pusher.trigger('players_channel', 'update', { message: "Logging into Google Docs", progress: 0 })
     session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
     doc5556 = session.spreadsheet_by_key(ENV['5556_key'])
-    ws18 = doc5556.worksheet_by_title("Players20")
+    ws20 = doc5556.worksheet_by_title("Players20")
     doc5758 = session.spreadsheet_by_key(ENV['5758_key'])
-    ws17 = doc5758.worksheet_by_title("Players18")
-    total_players = ws18.num_rows() + ws17.num_rows() - 2
+    ws18 = doc5758.worksheet_by_title("Players18")
+    total_players = ws20.num_rows() + ws18.num_rows() - 2
+    player_number = 0
 
-    #Login to HA
-    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena", progress: 0 })
+    # Login to HA
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena as speedysportwhiz", progress: 0 })
     agent = Mechanize.new
     agent.get("http://www.hockeyarena.net/en/")
     form = agent.page.forms.first
@@ -20,25 +21,58 @@ class U20Job
     form.password = ENV['HA_password']
     form.submit
 
-    for a in 2..ws18.num_rows()
-      player_number = a - 1
-      string = "Updating #{ws18[a,1]} (#{player_number} of #{total_players})"
-      Pusher.trigger('players_channel', 'update', { message: string, progress: (a-1.0)/total_players*100 })
+    # Update current team
+    for a in 2..ws20.num_rows()
+      player_number += 1.0
+      string = "Updating #{ws20[a,1]} (#{player_number} of #{total_players})"
+      Pusher.trigger('players_channel', 'update', { message: string, progress: player_number/total_players*100 })
       begin
-        agent = update_player(ws18, a, agent)
+        agent = update_player(ws20, a, agent, false)
       rescue Nokogiri::XML::XPath::SyntaxError => e
-        puts "**********Happening here in first loop: #{ws18[a,1]}**********"
+        puts "**********Happening here in first loop: #{ws20[a,1]}**********"
+        player_number -= 1.0
+        redo
       end
     end
 
-    for b in 2..ws17.num_rows()
-      player_number = ws18.num_rows() + b - 2
-      string = "Updating #{ws17[b,1]} (#{player_number} of #{total_players})"
-      Pusher.trigger('players_channel', 'update', { message: string, progress: (ws18.num_rows()+b-2.0)/total_players*100 })
-      begin
-        agent = update_player(ws17, b, agent)
-      rescue Nokogiri::XML::XPath::SyntaxError => e
-        puts "**********Happening here in second loop: #{ws17[b,1]}**********"
+    # Update next team
+    for b in 2..ws18.num_rows()
+      unless ws18[b,29] == "y"
+        player_number += 1.0
+        string = "Updating #{ws18[b,1]} (#{player_number} of #{total_players})"
+        Pusher.trigger('players_channel', 'update', { message: string, progress: player_number/total_players*100 })
+        begin
+          agent = update_player(ws18, b, agent, false)
+        rescue Nokogiri::XML::XPath::SyntaxError => e
+          puts "**********Happening here in second loop: #{ws18[b,1]}**********"
+          player_number -= 1.0
+          redo
+        end
+      end
+    end
+
+    # Login as assistant
+    Pusher.trigger('players_channel', 'update', { message: "Logging into Hockey Arena as magicspeedo", progress: player_number/total_players*100 })
+    agent = Mechanize.new
+    agent.get("http://www.hockeyarena.net/en/")
+    form = agent.page.forms.first
+    form.nick = ENV['HA_assistant']
+    form.password = ENV['HA_password']
+    form.submit
+
+    # Update players scouted by assistant
+    for b in 2..ws18.num_rows()
+      if ws18[b,29] == "y"
+        player_number += 1.0
+        string = "Updating #{ws18[b,1]} (#{player_number} of #{total_players})"
+        Pusher.trigger('players_channel', 'update', { message: string, progress: player_number/total_players*100 })
+        begin
+          agent = update_player(ws18, b, agent, true)
+        rescue Nokogiri::XML::XPath::SyntaxError => e
+          puts "**********Happening here in second loop: #{ws18[b,1]}**********"
+          player_number -= 1.0
+          redo
+        end
       end
     end
 
@@ -59,7 +93,7 @@ class U20Job
       end
     end
 
-    def update_player(ws, i, agent)
+    def update_player(ws, i, agent, asst)
       id = ws[i,28]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
 
@@ -70,7 +104,6 @@ class U20Job
 
       ws[i,2] = player_info[0] #ai
 
-      # FIX THIS SIZE VALUE
       if player_info.size > 35 #player is scouted
         ws[i,7] = strip_percent(player_info[16]) #goa
         ws[i,8] = strip_percent(player_info[18]) #def
@@ -82,7 +115,7 @@ class U20Job
         ws[i,14] = strip_percent(player_info[21]) #sco
         ws[i,16] = strip_percent(player_info[25]) #exp
 
-        if player_info[5] == "RIT Tigers"
+        if (!asst && player_info[5] == "RIT Tigers") || (asst && player_info[5] == "McDeedo Punch")
           ws[i,21] = player_info[34] #games
           ws[i,22] = player_info[36] #min
         else
