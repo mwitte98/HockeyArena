@@ -16,6 +16,7 @@ gem 'google_drive'
 gem 'newrelic_rpm'
 gem 'pusher'
 gem 'sucker_punch'
+gem 'rubyXL', '~> 3.3.2'
 
 group :development, :test do
   gem 'sqlite3', '1.3.9'
