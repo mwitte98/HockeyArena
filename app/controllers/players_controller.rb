@@ -25,12 +25,7 @@ class PlayersController < ApplicationController
   end
 
   def get_info
-    U20Job.new.async.perform()
-    redirect_to players5556_path
-  end
-
-  def get_U20_info
-    NewU20Job.new.async.perform()
+    UpdateJob.new.async.perform()
     redirect_to players5556_path
   end
 
