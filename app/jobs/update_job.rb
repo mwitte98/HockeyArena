@@ -3,19 +3,19 @@ class UpdateJob
   require 'active_support/core_ext'
   @@agent = nil
   @@session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
-  @@doc5556 = @@session.spreadsheet_by_key(ENV['5556_key'])
-  @@ws20 = @@doc5556.worksheet_by_title('Players20')
+  # @@doc5556 = @@session.spreadsheet_by_key(ENV['5556_key'])
+  # @@ws20 = @@doc5556.worksheet_by_title('Players20')
   @@doc5758 = @@session.spreadsheet_by_key(ENV['5758_key'])
-  @@ws18 = @@doc5758.worksheet_by_title('Players18')
+  @@ws18 = @@doc5758.worksheet_by_title('Players19')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
   @@total_players = @@ws20.num_rows + @@ws18.num_rows - 2
   @@player_number = 0
 
   def perform
-  	update_U20_mgr
+    update_U20_mgr
     ys_mgr
-    update_U20_asst
+    # update_U20_asst
   end
 
   private
@@ -57,7 +57,7 @@ class UpdateJob
 
       # Remove info of deleted players from doc
       if !names_remove.empty?
-        sheet_rows = wsSpeeyYS.rows
+        sheet_rows = wsSpeedyYS.rows
         names_remove.each do |name|
           for a in 2..@@wsSpeedyYS.num_rows
             if @@wsSpeedyYS[a,1] == name
@@ -131,19 +131,19 @@ class UpdateJob
       form.password = ENV['HA_password']
       form.submit
 
-      # Update 19/20yo
-      for a in 2..@@ws20.num_rows
-        @@player_number += 1
-        string = "Updating #{@@ws20[a,1]} (#{@@player_number} of #{@@total_players})"
-        Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-        begin
-          @@agent = update_player(@@ws20, a, @@agent, false)
-        rescue Nokogiri::XML::XPath::SyntaxError => e
-          puts "**********Happening here in first loop: #{@@ws20[a,1]}**********"
-          @@player_number -= 1
-          redo
-        end
-      end
+      # # Update 19/20yo
+      # for a in 2..@@ws20.num_rows
+      #   @@player_number += 1
+      #   string = "Updating #{@@ws20[a,1]} (#{@@player_number} of #{@@total_players})"
+      #   Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
+      #   begin
+      #     @@agent = update_player(@@ws20, a, @@agent, false)
+      #   rescue Nokogiri::XML::XPath::SyntaxError => e
+      #     puts "**********Happening here in first loop: #{@@ws20[a,1]}**********"
+      #     @@player_number -= 1
+      #     redo
+      #   end
+      # end
 
       # Update 17/18yo
       for b in 2..@@ws18.num_rows
@@ -246,7 +246,7 @@ class UpdateJob
       end
 
       if stadium_info[3][0] == '0' #stadium-training
-      	ws[i,5] = 0
+        ws[i,5] = 0
       else
         ws[i,5] = stadium_info[3][0..2]
       end
