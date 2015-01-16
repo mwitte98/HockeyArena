@@ -1,12 +1,12 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  def show5556
-    @players = Player.order("id DESC").all(conditions: ["age = ?", 20]).uniq
+  def show5758
+    @players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 2.day)..Time.now}).uniq
   end
 
-  def show5758
-    @players = Player.order("id DESC").all(conditions: ["age = ?", 18]).uniq
+  def show5960
+    @players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 2.day)..Time.now}).uniq
   end
 
   def show
@@ -26,14 +26,14 @@ class PlayersController < ApplicationController
 
   def get_info
     UpdateJob.new.async.perform()
-    redirect_to players5556_path
+    redirect_to players5758_path
   end
 
-  def get_NT_info
-    @players = []
-    NTJob.new.async.perform(params[:username], params[:password])
-    redirect_to players5556_path
-  end
+  # def get_NT_info
+  #   @players = []
+  #   NTJob.new.async.perform(params[:username], params[:password])
+  #   redirect_to players5556_path
+  # end
 
   private
 

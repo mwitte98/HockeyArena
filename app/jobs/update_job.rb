@@ -9,18 +9,20 @@ class UpdateJob
   @@ws18 = @@doc5758.worksheet_by_title('Players19')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
-  @@total_players = @@ws20.num_rows + @@ws18.num_rows - 2
+  @@wsMSYS = @@docYS.worksheet_by_title('MS YS')
+  @@total_players = @@ws18.num_rows - 1 + #@@ws20 - 1
   @@player_number = 0
 
   def perform
     update_U20_mgr
-    ys_mgr
-    # update_U20_asst
+    ys_mgr(@@wsSpeedyYS)
+    update_U20_asst
+    ys_mgr(@@wsMSYS)
   end
 
   private
 
-    def ys_mgr
+    def ys_mgr(ws)
       # Update my YS players
       ys_info = []
       player_info = []
@@ -48,8 +50,8 @@ class UpdateJob
 
       # Names of all players that have been tracked
       names_in_doc = []
-      for a in 2..@@wsSpeedyYS.num_rows
-        names_in_doc << @@wsSpeedyYS[a,1]
+      for a in 2..ws.num_rows
+        names_in_doc << ws[a,1]
       end
 
       names_add = names - names_in_doc
@@ -57,14 +59,14 @@ class UpdateJob
 
       # Remove info of deleted players from doc
       if !names_remove.empty?
-        sheet_rows = wsSpeedyYS.rows
+        sheet_rows = ws.rows
         names_remove.each do |name|
-          for a in 2..@@wsSpeedyYS.num_rows
-            if @@wsSpeedyYS[a,1] == name
+          for a in 2..ws.num_rows
+            if ws[a,1] == name
               rows_adding = sheet_rows.drop(a)
-              @@wsSpeedyYS.update_cells(a,1,rows_adding)
-              for b in 1..@@wsSpeedyYS.num_cols
-                @@wsSpeedyYS[@@wsSpeedyYS.num_rows, b] = ''
+              ws.update_cells(a,1,rows_adding)
+              for b in 1..ws.num_cols
+                ws[ws.num_rows, b] = ''
               end
             end
           end
@@ -73,14 +75,14 @@ class UpdateJob
 
       # Add new players to the doc
       if !names_add.empty?
-        sheet_rows = @@wsSpeedyYS.rows(skip=1)
+        sheet_rows = ws.rows(skip=1)
         add_num = names_add.size
-        @@wsSpeedyYS.update_cells(add_num+2,1,sheet_rows)
+        ws.update_cells(add_num+2,1,sheet_rows)
         for a in 2..(add_num+1)
-          for b in 1..@@wsSpeedyYS.num_cols
-            @@wsSpeedyYS[a,b] = ""
+          for b in 1..ws.num_cols
+            ws[a,b] = ""
           end
-          @@wsSpeedyYS[a,1] = names_add[a-2]
+          ws[a,1] = names_add[a-2]
         end
       end
 
@@ -88,34 +90,40 @@ class UpdateJob
 
       # Update player info and add new AI
       for a in 0..(ys_info.size-1)
-        @@wsSpeedyYS[a+2,2] = ys_info[a][1] #age
-        @@wsSpeedyYS[a+2,3] = ys_info[a][2] #qua
-        @@wsSpeedyYS[a+2,4] = ys_info[a][3] #pot
-        @@wsSpeedyYS[a+2,5] = ys_info[a][4] #pos
-        @@wsSpeedyYS[a+2,@@wsSpeedyYS.num_cols-4] = ys_info[a][5] #ai
+        ws[a+2,2] = ys_info[a][1] #age
+        ws[a+2,3] = ys_info[a][2] #qua
+        ws[a+2,4] = ys_info[a][3] #pot
+        ws[a+2,5] = ys_info[a][4] #pos
+        ai = ys_info[a][5]
+        if ai.size == 7
+          ai = ai[0..1]
+        elsif ai.size == 8
+          ai = ai[0..2]
+        end
+        ws[a+2,ws.num_cols-4] = ai #ai
       end
 
       # Update AI column header with date
-      time = Time.now.getgm + 1.days
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols-4] = "#{time.day}.#{time.month}"
+      time = Time.now.getgm
+      ws[1,ws.num_cols-4] = "#{time.day}.#{time.month}"
 
       # Update formulas
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols-3] = "Avg"
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols-2] = "Min"
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols-1] = "Med"
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols] = "Max"
-      @@wsSpeedyYS[1,@@wsSpeedyYS.num_cols+1] = " "
-      num_cols = @@wsSpeedyYS.num_cols
-      for a in 2..@@wsSpeedyYS.num_rows
+      ws[1,ws.num_cols-3] = "Avg"
+      ws[1,ws.num_cols-2] = "Min"
+      ws[1,ws.num_cols-1] = "Med"
+      ws[1,ws.num_cols] = "Max"
+      ws[1,ws.num_cols+1] = " "
+      num_cols = ws.num_cols
+      for a in 2..ws.num_rows
         lastAiCell = RubyXL::Reference.ind2ref(a-1,num_cols-6)
-        @@wsSpeedyYS[a,num_cols-4] = "=AVERAGE(F#{a}:#{lastAiCell})"
-        @@wsSpeedyYS[a,num_cols-3] = "=MIN(F#{a}:#{lastAiCell})"
-        @@wsSpeedyYS[a,num_cols-2] = "=MEDIAN(F#{a}:#{lastAiCell})"
-        @@wsSpeedyYS[a,num_cols-1] = "=MAX(F#{a}:#{lastAiCell})"
-        @@wsSpeedyYS[a,num_cols] = "=IF(B#{a}=16,COUNTIF(F#{a}:#{lastAiCell},\">=40\"),IF(B#{a}=17,COUNTIF(F#{a}:#{lastAiCell},\">=70\"),IF(B#{a}=18,COUNTIF(F#{a}:#{lastAiCell},\">=100\"),0)))"
+        ws[a,num_cols-4] = "=AVERAGE(F#{a}:#{lastAiCell})"
+        ws[a,num_cols-3] = "=MIN(F#{a}:#{lastAiCell})"
+        ws[a,num_cols-2] = "=MEDIAN(F#{a}:#{lastAiCell})"
+        ws[a,num_cols-1] = "=MAX(F#{a}:#{lastAiCell})"
+        ws[a,num_cols] = "=IF(B#{a}=16,COUNTIF(F#{a}:#{lastAiCell},\">=40\"),IF(B#{a}=17,COUNTIF(F#{a}:#{lastAiCell},\">=70\"),IF(B#{a}=18,COUNTIF(F#{a}:#{lastAiCell},\">=100\"),0)))"
       end
 
-      @@wsSpeedyYS.synchronize
+      ws.synchronize
     end
 
     def update_U20_mgr
@@ -173,22 +181,22 @@ class UpdateJob
       form.submit
 
       # Update players scouted by assistant
-      for b in 2..@@ws18.num_rows
-        if @@ws18[b,29] == 'y'
-          @@player_number += 1
-          string = "Updating #{@@ws18[b,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-          begin
-            @@agent = update_player(@@ws18, b, @@agent, true)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in second loop: #{@@ws18[b,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        end
-      end
+      # for b in 2..@@ws18.num_rows
+      #   if @@ws18[b,29] == 'y'
+      #     @@player_number += 1
+      #     string = "Updating #{@@ws18[b,1]} (#{@@player_number} of #{@@total_players})"
+      #     Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
+      #     begin
+      #       @@agent = update_player(@@ws18, b, @@agent, true)
+      #     rescue Nokogiri::XML::XPath::SyntaxError => e
+      #       puts "**********Happening here in second loop: #{@@ws18[b,1]}**********"
+      #       @@player_number -= 1
+      #       redo
+      #     end
+      #   end
+      # end
 
-      Pusher.trigger('players_channel', 'update', { message: '', progress: 0 })
+      # Pusher.trigger('players_channel', 'update', { message: '', progress: 0 })
     end
 
     def strip_percent(value)
