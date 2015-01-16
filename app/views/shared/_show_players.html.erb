@@ -13,7 +13,55 @@
         progressBar.width(data.progress+"%")
         messageBox.html(data.message)
       });
-    })
+      $('.stadium').each(function() {
+        var value = $(this).text();
+        if (value >= 240) {
+          $(this).addClass('blue');
+        }
+        else if (value < 240 && value >= 200) {
+          $(this).addClass('green');
+        }
+        else if (value < 200 && value >= 180) {
+          $(this).addClass('yellow');
+        }
+        else if (value < 180 && value >= 150) {
+          $(this).addClass('orange');
+        }
+        else if (value < 150) {
+          $(this).addClass('red');
+        }
+      });
+      $('.minutes').each(function() {
+        var value = $(this).text();
+        if (value >= 30) {
+          $(this).addClass('blue');
+        }
+        else if (value < 30 && value >= 25) {
+          $(this).addClass('green');
+        }
+        else if (value < 25 && value >= 20) {
+          $(this).addClass('yellow');
+        }
+        else if (value < 20 && value >= 10) {
+          $(this).addClass('orange');
+        }
+        else if (value < 10) {
+          $(this).addClass('red');
+        }
+      });
+      $('.ai_diff').each(function() {
+        var value = $(this).text();
+        if (value != 0) {
+          $(this).addClass('red');
+        }
+      });
+      $('.games').each(function() {
+        var value = $(this).text();
+        if (value < 10) {
+          $(this).addClass('red');
+        }
+      });
+    });
   </script>
 </head>
 
@@ -22,15 +70,16 @@
     <h1>Players</h1>
   </div>
   <div class="col-xs-6 col-sm-3">
-    <table>
-      <!-- <td>
+    <%= link_to "Update U20", {controller: :players, action: "get_info"}, {class: "btn btn-md btn-primary", style: "float: right"} %>
+    <!--<table>
+      <td>
         <%#= link_to "Update NT", {controller: :players, action: "login_HA"}, {class: "btn btn-md btn-primary", style: "float: right"} %>
       </td>
-      <td></td> -->
+      <td></td>
       <td>
-        <%= link_to "Update U20", {controller: :players, action: "get_info"}, {class: "btn btn-md btn-primary", style: "float: right"} %>
+        
       </td>
-    </table>
+    </table> -->
   </div>
 </div>
 
@@ -73,8 +122,8 @@
         <td><%= player.ai %></td>
         <td><%= player.quality %></td>
         <td><%= player.potential %></td>
-        <td><%= player.stadium %></td>
-        <td><%= average_minutes(player) %></td>
+        <td class="stadium"><%= player.stadium %></td>
+        <td class="minutes"><%= average_minutes(player) %></td>
         <td><%= player.goalie %></td>
         <td><%= player.defense %></td>
         <td><%= player.offense %></td>
@@ -86,8 +135,8 @@
         <td><%= player.playertype %></td>
         <td><%= player.experience %></td>
         <td><%= calculate_ai(player) %></td>
-        <td><%= player.ai - calculate_ai(player) %></td>
-        <td><%= player.games %></td>
+        <td class="ai_diff"><%= player.ai - calculate_ai(player) %></td>
+        <td class="games"><%= player.games %></td>
         <td><%= player.minutes %></td>
       </tr>
     <% end %>

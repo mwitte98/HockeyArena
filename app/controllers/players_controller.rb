@@ -2,11 +2,11 @@ class PlayersController < ApplicationController
   before_action :signed_in_user
 
   def show5758
-    @players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 2.day)..Time.now}).uniq
+    @players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show5960
-    @players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 2.day)..Time.now}).uniq
+    @players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show
