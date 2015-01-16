@@ -35,6 +35,8 @@ table {
   td, th {
     padding-right: 15px;
     white-space: nowrap;
+    border: 1px solid gray;
+    border-collapse: collapse;
   }
 }
 
@@ -158,4 +160,24 @@ input {
   width: 100%;
   margin-top: 45px;
   @include box_sizing;
+}
+
+.blue {
+  background-color: #00ffff;
+}
+
+.green {
+  background-color: #00ff00;
+}
+
+.yellow {
+  background-color: #ffff00;
+}
+
+.orange {
+  background-color: #ff9900;
+}
+
+.red {
+  background-color: #ff0000;
 }
