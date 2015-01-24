@@ -3,14 +3,14 @@ class UpdateJob
   require 'active_support/core_ext'
   @@agent = nil
   @@session = GoogleDrive.login(ENV['google_email'], ENV['google_password'])
-  # @@doc5556 = @@session.spreadsheet_by_key(ENV['5556_key'])
-  # @@ws20 = @@doc5556.worksheet_by_title('Players20')
   @@doc5758 = @@session.spreadsheet_by_key(ENV['5758_key'])
-  @@ws18 = @@doc5758.worksheet_by_title('Players19')
+  @@ws19 = @@doc5758.worksheet_by_title('Players19')
+  @@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
+  @@ws17 = @@doc5960.worksheet_by_title('Players17')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
   @@wsMSYS = @@docYS.worksheet_by_title('MS YS')
-  @@total_players = @@ws18.num_rows - 1 + #@@ws20 - 1
+  @@total_players = @@ws19.num_rows + @@ws17.num_rows - 2
   @@player_number = 0
 
   def perform
@@ -104,7 +104,7 @@ class UpdateJob
       end
 
       # Update AI column header with date
-      time = Time.now.getgm
+      time = Time.now.getgm + 1.days
       ws[1,ws.num_cols-4] = "#{time.day}.#{time.month}"
 
       # Update formulas
@@ -139,33 +139,33 @@ class UpdateJob
       form.password = ENV['HA_password']
       form.submit
 
-      # # Update 19/20yo
-      # for a in 2..@@ws20.num_rows
-      #   @@player_number += 1
-      #   string = "Updating #{@@ws20[a,1]} (#{@@player_number} of #{@@total_players})"
-      #   Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-      #   begin
-      #     @@agent = update_player(@@ws20, a, @@agent, false)
-      #   rescue Nokogiri::XML::XPath::SyntaxError => e
-      #     puts "**********Happening here in first loop: #{@@ws20[a,1]}**********"
-      #     @@player_number -= 1
-      #     redo
-      #   end
-      # end
-
-      # Update 17/18yo
-      for b in 2..@@ws18.num_rows
-        unless @@ws18[b,29] == 'y'
+      # Update 19/20yo
+      for b in 2..@@ws19.num_rows
+        unless @@ws19[b,29] == 'y'
           @@player_number += 1
-          string = "Updating #{@@ws18[b,1]} (#{@@player_number} of #{@@total_players})"
+          string = "Updating #{@@ws19[b,1]} (#{@@player_number} of #{@@total_players})"
           Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
           begin
-            @@agent = update_player(@@ws18, b, @@agent, false)
+            @@agent = update_player(@@ws19, b, @@agent, false)
           rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in second loop: #{@@ws18[b,1]}**********"
+            puts "**********Happening here in second loop: #{@@ws19[b,1]}**********"
             @@player_number -= 1
             redo
           end
+        end
+      end
+
+      # Update 17/18yo
+      for a in 2..@@ws17.num_rows
+        @@player_number += 1
+        string = "Updating #{@@ws17[a,1]} (#{@@player_number} of #{@@total_players})"
+        Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
+        begin
+          @@agent = update_player(@@ws17, a, @@agent, false)
+        rescue Nokogiri::XML::XPath::SyntaxError => e
+          puts "**********Happening here in first loop: #{@@ws17[a,1]}**********"
+          @@player_number -= 1
+          redo
         end
       end
     end
@@ -217,7 +217,7 @@ class UpdateJob
 
       player_info = []
       agent.page.search('.q1, .q').each do |info|
-        player_info << info.text.strip
+        player_info << info.text
       end
 
       ws[i,2] = player_info[0] #ai
