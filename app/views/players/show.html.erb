@@ -2,6 +2,65 @@
 <h2><%= @player.name %></h2>
 <h4><%= @player.playertype %>: <%= @player.quality %>/<%= @player.potential %></h4>
 
+<head>
+  <script src="https://d3dy5gmtp8yhk7.cloudfront.net/2.2/pusher.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var pusher = new Pusher('<%=escape_javascript ENV['pusher_key'] %>', { encrypted: true });
+      var channel = pusher.subscribe('players_channel');
+      channel.bind('update', function(data) {
+        var messageBox = $('#progress-bar-form').children('.messages')
+        var progressBar = $('#progress-bar')
+
+        progressBar.width(data.progress+"%")
+        messageBox.html(data.message)
+      });
+      $('.stadium').each(function() {
+        var value = $(this).text();
+        if (value >= 240) {
+          $(this).addClass('blue');
+        }
+        else if (value < 240 && value >= 200) {
+          $(this).addClass('green');
+        }
+        else if (value < 200 && value >= 180) {
+          $(this).addClass('yellow');
+        }
+        else if (value < 180 && value >= 150) {
+          $(this).addClass('orange');
+        }
+        else if (value < 150) {
+          $(this).addClass('red');
+        }
+      });
+      $('.minutes').each(function() {
+        var value = $(this).text();
+        if (value >= 30) {
+          $(this).addClass('blue');
+        }
+        else if (value < 30 && value >= 25) {
+          $(this).addClass('green');
+        }
+        else if (value < 25 && value >= 20) {
+          $(this).addClass('yellow');
+        }
+        else if (value < 20 && value >= 10) {
+          $(this).addClass('orange');
+        }
+        else if (value < 10) {
+          $(this).addClass('red');
+        }
+      });
+      $('.ai_diff').each(function() {
+        var value = $(this).text();
+        if (value != 0) {
+          $(this).addClass('red');
+        }
+      });
+    });
+  </script>
+</head>
+
 <table>
   <thead>
     <tr>
@@ -27,27 +86,107 @@
     </tr>
   </thead>
   <tbody>
-    <% @players.each do |player| %>
+    <% @players.each_with_index do |player, index| %>
       <tr>
-        <td><%= player.ai %></td>
-        <td><%= player.stadium %></td>
-        <td><%= average_minutes(player) %></td>
-        <td><%= player.goalie %></td>
-        <td><%= player.defense %></td>
-        <td><%= player.offense %></td>
-        <td><%= player.shooting %></td>
-        <td><%= player.passing %></td>
-        <td><%= player.speed %></td>
-        <td><%= player.strength %></td>
-        <td><%= player.selfcontrol %></td>
-        <td><%= player.playertype %></td>
-        <td><%= player.experience %></td>
-        <td><%= calculate_ai(player) %></td>
-        <td><%= player.ai - calculate_ai(player) %></td>
-        <td><%= player.games %></td>
-        <td><%= player.minutes %></td>
-        <td><%= player.created_at.strftime("%m/%d/%Y %I:%M%p") %></td>
-        <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure?" } %></td>
+        <% if index >= @players.length - 1 %>
+          <td><%= player.ai %></td>
+          <td class="stadium"><%= player.stadium %></td>
+          <td class="minutes"><%= average_minutes(player) %></td>
+          <td><%= player.goalie %></td>
+          <td><%= player.defense %></td>
+          <td><%= player.offense %></td>
+          <td><%= player.shooting %></td>
+          <td><%= player.passing %></td>
+          <td><%= player.speed %></td>
+          <td><%= player.strength %></td>
+          <td><%= player.selfcontrol %></td>
+          <td><%= player.playertype %></td>
+          <td><%= player.experience %></td>
+          <td><%= calculate_ai(player) %></td>
+          <td class="ai_diff"><%= player.ai - calculate_ai(player) %></td>
+          <td><%= player.games %></td>
+          <td><%= player.minutes %></td>
+          <td><%= player.created_at.strftime("%m/%d/%Y %I:%M%p") %></td>
+          <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure?" } %></td>
+        <% else %>
+          <% if player.ai - @players[index+1].ai > 0 %>
+            <td class="darkgreen"><%= player.ai %></td>
+          <% else %>
+            <td><%= player.ai %></td>
+          <% end %>
+
+          <td class="stadium"><%= player.stadium %></td>
+
+          <td class="minutes"><%= average_minutes(player) %></td>
+
+          <% if player.goalie.nil? || @players[index+1].goalie.nil? || player.goalie - @players[index+1].goalie < 1 %>
+            <td><%= player.goalie %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.goalie %></td>
+          <% end %>
+
+          <% if player.defense.nil? || @players[index+1].defense.nil? || player.defense - @players[index+1].defense < 1 %>
+            <td><%= player.defense %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.defense %></td>
+          <% end %>
+
+          <% if player.offense.nil? || @players[index+1].offense.nil? || player.offense - @players[index+1].offense < 1 %>
+            <td><%= player.offense %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.offense %></td>
+          <% end %>
+
+          <% if player.shooting.nil? || @players[index+1].shooting.nil? || player.shooting - @players[index+1].shooting < 1 %>
+            <td><%= player.shooting %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.shooting %></td>
+          <% end %>
+
+          <% if player.passing.nil? || @players[index+1].passing.nil? || player.passing - @players[index+1].passing < 1 %>
+            <td><%= player.passing %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.passing %></td>
+          <% end %>
+
+          <% if player.speed.nil? || @players[index+1].speed.nil? || player.speed - @players[index+1].speed < 1 %>
+            <td><%= player.speed %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.speed %></td>
+          <% end %>
+
+          <% if player.strength.nil? || @players[index+1].strength.nil? || player.strength - @players[index+1].strength < 1 %>
+            <td><%= player.strength %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.strength %></td>
+          <% end %>
+
+          <% if player.selfcontrol.nil? || @players[index+1].selfcontrol.nil? || player.selfcontrol - @players[index+1].selfcontrol < 1 %>
+            <td><%= player.selfcontrol %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.selfcontrol %></td>
+          <% end %>
+
+          <td><%= player.playertype %></td>
+
+          <% if player.experience.nil? || @players[index+1].experience.nil? || player.experience - @players[index+1].experience < 1 %>
+            <td><%= player.experience %></td>
+          <% else %>
+            <td class="darkgreen"><%= player.experience %></td>
+          <% end %>
+
+          <td><%= calculate_ai(player) %></td>
+
+          <td class="ai_diff"><%= player.ai - calculate_ai(player) %></td>
+
+          <td><%= player.games %></td>
+
+          <td><%= player.minutes %></td>
+
+          <td><%= player.created_at.strftime("%m/%d/%Y %I:%M%p") %></td>
+
+          <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure?" } %></td>
+        <% end %>
       </tr>
     <% end %>
   </tbody>

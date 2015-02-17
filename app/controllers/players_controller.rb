@@ -2,7 +2,14 @@ class PlayersController < ApplicationController
   before_action :signed_in_user
 
   def show5758
-    @players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 1.day)..Time.now}).uniq
+    @connection = ActiveRecord::Base.connection
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age IN (18,19)')
+    @players = []
+    @distinct.each do |distinct|
+      @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
+    end
+    #@players = @connection.exec_query('SELECT * FROM players WHERE age IN (18, 19) AND name IN (SELECT DISTINCT name FROM players) ORDER BY id DESC')
+    #@players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show5960
