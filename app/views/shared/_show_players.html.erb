@@ -55,12 +55,6 @@
           $(this).addClass('red');
         }
       });
-      $('.games').each(function() {
-        var value = $(this).text();
-        if (value < 10) {
-          $(this).addClass('red');
-        }
-      });
     });
   </script>
 </head>
@@ -118,27 +112,139 @@
   <tbody>
     <% @players.each do |player| %>
       <tr>
-        <td><%= link_to player.name, player_path(player) %></td>
-        <td><%= player.ai %></td>
-        <td><%= player.quality %></td>
-        <td><%= player.potential %></td>
-        <td class="stadium"><%= player.stadium %></td>
-        <td class="minutes"><%= average_minutes(player) %></td>
-        <td><%= player.goalie %></td>
-        <td><%= player.defense %></td>
-        <td><%= player.offense %></td>
-        <td><%= player.shooting %></td>
-        <td><%= player.passing %></td>
-        <td><%= player.speed %></td>
-        <td><%= player.strength %></td>
-        <td><%= player.selfcontrol %></td>
-        <td><%= player.playertype %></td>
-        <td><%= player.experience %></td>
-        <td><%= calculate_ai(player) %></td>
-        <td class="ai_diff"><%= player.ai - calculate_ai(player) %></td>
-        <td class="games"><%= player.games %></td>
-        <td><%= player.minutes %></td>
+        <td><%= link_to player[0].name, player_path(player[0]) %></td>
+
+        <% if player[0].ai - player[1].ai > 0 %>
+          <td class="darkgreen"><%= player[0].ai %></td>
+        <% else %>
+          <td><%= player[0].ai %></td>
+        <% end %>
+
+        <td><%= player[0].quality %></td>
+
+        <td><%= player[0].potential %></td>
+
+        <td class="stadium"><%= player[0].stadium %></td>
+
+        <td class="minutes"><%= average_minutes(player[0]) %></td>
+
+        <% if player[0].goalie.nil? || player[1].goalie.nil? || player[0].goalie - player[1].goalie < 1 %>
+          <td><%= player[0].goalie %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].goalie %></td>
+        <% end %>
+
+        <% if player[0].defense.nil? || player[1].defense.nil? || player[0].defense - player[1].defense < 1 %>
+          <td><%= player[0].defense %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].defense %></td>
+        <% end %>
+        
+        <% if player[0].offense.nil? || player[1].offense.nil? || player[0].offense - player[1].offense < 1 %>
+          <td><%= player[0].offense %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].offense %></td>
+        <% end %>
+        
+        <% if player[0].shooting.nil? || player[1].shooting.nil? || player[0].shooting - player[1].shooting < 1 %>
+          <td><%= player[0].shooting %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].shooting %></td>
+        <% end %>
+        
+        <% if player[0].passing.nil? || player[1].passing.nil? || player[0].passing - player[1].passing < 1 %>
+          <td><%= player[0].passing %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].passing %></td>
+        <% end %>
+        
+        <% if player[0].speed.nil? || player[1].speed.nil? || player[0].speed - player[1].speed < 1 %>
+          <td><%= player[0].speed %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].speed %></td>
+        <% end %>
+        
+        <% if player[0].strength.nil? || player[1].strength.nil? || player[0].strength - player[1].strength < 1 %>
+          <td><%= player[0].strength %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].strength %></td>
+        <% end %>
+        
+        <% if player[0].selfcontrol.nil? || player[1].selfcontrol.nil? || player[0].selfcontrol - player[1].selfcontrol < 1 %>
+          <td><%= player[0].selfcontrol %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].selfcontrol %></td>
+        <% end %>
+        
+        <td><%= player[0].playertype %></td>
+
+        <% if player[0].experience.nil? || player[1].experience.nil? || player[0].experience - player[1].experience < 1 %>
+          <td><%= player[0].experience %></td>
+        <% else %>
+          <td class="darkgreen"><%= player[0].experience %></td>
+        <% end %>
+        
+        <td><%= calculate_ai(player[0]) %></td>
+
+        <td class="ai_diff"><%= player[0].ai - calculate_ai(player[0]) %></td>
+
+        <td class="games"><%= player[0].games %></td>
+
+        <td><%= player[0].minutes %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<!-- <table id="players">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>AI</th>
+      <th>Q</th>
+      <th>P</th>
+      <th>T/R</th>
+      <th>Avg Min</th>
+      <th>Goa</th>
+      <th>Def</th>
+      <th>Att</th>
+      <th>Sho</th>
+      <th>Pas</th>
+      <th>Spe</th>
+      <th>Str</th>
+      <th>SCo</th>
+      <th>Type</th>
+      <th>Exp</th>
+      <th>Calc AI</th>
+      <th>AI Diff</th>
+      <th>Games</th>
+      <th>Min</th>
+    </tr>
+  </thead>
+  <tbody>
+    <#% @players.each do |player| %>
+      <tr>
+        <td><#%= link_to player["name"], player_path(player["id"]) %></td>
+        <td><#%= player["ai"] %></td>
+        <td><#%= player["quality"] %></td>
+        <td><#%= player["potential"] %></td>
+        <td class="stadium"><#%= player["stadium"] %></td>
+        <td class="minutes"><#%= average_minutes(player) %></td>
+        <td><#%= player["goalie"] %></td>
+        <td><#%= player["defense"] %></td>
+        <td><#%= player["offense"] %></td>
+        <td><#%= player["shooting"] %></td>
+        <td><#%= player["passing"] %></td>
+        <td><#%= player["speed"] %></td>
+        <td><#%= player["strength"] %></td>
+        <td><#%= player["selfcontrol"] %></td>
+        <td><#%= player["playertype"] %></td>
+        <td><#%= player["experience"] %></td>
+        <td><#%= calculate_ai(player) %></td>
+        <td class="ai_diff"><#%= player["ai"] - calculate_ai(player) %></td>
+        <td class="games"><#%= player["games"] %></td>
+        <td><#%= player["minutes"] %></td>
+      </tr>
+    <#% end %>
+  </tbody>
+</table> -->
