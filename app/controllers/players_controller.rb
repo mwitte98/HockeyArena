@@ -22,9 +22,34 @@ class PlayersController < ApplicationController
   end
 
   def destroy
-    Player.find(params[:id]).destroy
-    flash[:success] = "Player deleted."
-    redirect_to :back
+    player = Player.find(params[:id])
+    player_name = player.name
+    player_age = player.age
+    player.destroy
+    flash[:success] = "#{player_name} (id: #{params[:id]}) deleted."
+    new_player = Player.find_by name: player_name
+    if new_player.nil?
+      if player_age == 17
+        redirect_to players5960_path
+      else
+        redirect_to players5758_path
+      end
+    else
+      redirect_to player_path(new_player)
+    end
+  end
+
+  def delete_all
+    player = Player.find(params[:id])
+    player_name = player.name
+    player_age = player.age
+    Player.delete_all(["name = ?", player_name])
+    flash[:success] = "All instances of #{player_name} deleted."
+    if player_age == 17
+      redirect_to players5960_path
+    else
+      redirect_to players5758_path
+    end
   end
 
   def login_HA

@@ -82,7 +82,7 @@
       <th>Games</th>
       <th>Min</th>
       <th>Date</th>
-      <th></th>
+      <th><%= link_to "delete all", delete_all_path(:id => @player.id), data: { confirm: "Are you sure you want to delete all instances of #{@player.name}?" } %></th>
     </tr>
   </thead>
   <tbody>
@@ -107,7 +107,7 @@
           <td><%= player.games %></td>
           <td><%= player.minutes %></td>
           <td><%= player.created_at.strftime("%m/%d/%Y %I:%M%p") %></td>
-          <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure?" } %></td>
+          <td><%= link_to "delete", player, method: :delete, data: { confirm: "Are you sure you want to delete this instance of #{@player.name}?" } %></td>
         <% else %>
           <% if player.ai - @players[index+1].ai > 0 %>
             <td class="darkgreen"><%= player.ai %></td>
