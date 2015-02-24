@@ -13,7 +13,13 @@ class PlayersController < ApplicationController
   end
 
   def show5960
-    @players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 1.day)..Time.now}).uniq
+    @connection = ActiveRecord::Base.connection
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=17')
+    @players = []
+    @distinct.each do |distinct|
+      @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
+    end
+    #@players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show
