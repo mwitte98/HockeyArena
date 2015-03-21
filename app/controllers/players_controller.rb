@@ -3,18 +3,16 @@ class PlayersController < ApplicationController
 
   def show5758
     @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age IN (18,19)')
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age IN (19,20)')
     @players = []
     @distinct.each do |distinct|
       @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
     end
-    #@players = @connection.exec_query('SELECT * FROM players WHERE age IN (18, 19) AND name IN (SELECT DISTINCT name FROM players) ORDER BY id DESC')
-    #@players = Player.order("id DESC").where({age: [18, 19], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show5960
     @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=17').to_a
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=18').to_a
     @distinct.delete_if do |player|
       new_player = Player.find_by name: player["name"], age: 18
       new_player.nil? ? false : true
@@ -23,7 +21,6 @@ class PlayersController < ApplicationController
     @distinct.each do |distinct|
       @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
     end
-    #@players = Player.order("id DESC").where({age: [17], created_at: (Time.now - 1.day)..Time.now}).uniq
   end
 
   def show
