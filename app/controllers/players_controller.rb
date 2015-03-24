@@ -14,7 +14,7 @@ class PlayersController < ApplicationController
     @connection = ActiveRecord::Base.connection
     @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=18').to_a
     @distinct.delete_if do |player|
-      new_player = Player.find_by name: player["name"], age: 18
+      new_player = Player.find_by name: player["name"], age: 19
       new_player.nil? ? false : true
     end
     @players = []
