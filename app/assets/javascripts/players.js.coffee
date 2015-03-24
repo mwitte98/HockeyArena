@@ -3,7 +3,7 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 jQuery ->
-  $('#players').dataTable( {
+  $('.players').dataTable( {
     "iDisplayLength": 100,
     "aaSorting": [[1, 'desc']]
   } );
