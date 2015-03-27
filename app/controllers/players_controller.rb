@@ -25,7 +25,7 @@ class PlayersController < ApplicationController
 
   def show
     @player = Player.find(params[:id])
-    @players = Player.order("id DESC").all(conditions: ["name = ?", @player.name])
+    @players = Player.order("id DESC").where("name = ?", @player.name)
   end
 
   def destroy

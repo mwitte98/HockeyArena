@@ -1,5 +1,5 @@
 <% provide(:title, @player.name) %>
-<h2><%= @player.name %></h2>
+<h2><a href="http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=<%= @player.playerid %>" target="_blank"><%= @player.name %></a></h2>
 <h4><%= @player.playertype %>: <%= @player.quality %>/<%= @player.potential %></h4>
 
 <head>
@@ -75,7 +75,6 @@
       <th>Spe</th>
       <th>Str</th>
       <th>SCo</th>
-      <th>Type</th>
       <th>Exp</th>
       <th>Calc AI</th>
       <th>AI Diff</th>
@@ -100,7 +99,6 @@
           <td><%= player.speed %></td>
           <td><%= player.strength %></td>
           <td><%= player.selfcontrol %></td>
-          <td><%= player.playertype %></td>
           <td><%= player.experience %></td>
           <td><%= calculate_ai(player) %></td>
           <td class="ai_diff"><%= player.ai - calculate_ai(player) %></td>
@@ -166,8 +164,6 @@
           <% else %>
             <td class="darkgreen"><%= player.selfcontrol %></td>
           <% end %>
-
-          <td><%= player.playertype %></td>
 
           <% if player.experience.nil? || @players[index+1].experience.nil? || player.experience - @players[index+1].experience < 1 %>
             <td><%= player.experience %></td>
