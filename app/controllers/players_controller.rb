@@ -29,21 +29,17 @@ class PlayersController < ApplicationController
   end
 
   def destroy
-    player = Player.find(params[:id])
-    player_name = player.name
-    player_age = player.age
-    player.destroy
-    flash[:success] = "#{player_name} (id: #{params[:id]}) deleted."
-    new_player = Player.find_by name: player_name
-    if new_player.nil?
-      if player_age == 17
-        redirect_to players5960_path
-      else
-        redirect_to players5758_path
-      end
+    num_instances = params[:player_ids].size
+    player = Player.where(id: params[:player_ids][0]).limit(1).order("id DESC")
+    player_name = player.first.name
+    player_age = player.first.age
+    Player.destroy_all(id: params[:player_ids])
+    flash[:success] = "#{num_instances} instances of #{player_name} deleted."
+    if player_age == 17 || player_age == 18
+      redirect_to players5960_path
     else
-      redirect_to player_path(new_player)
-    end
+      redirect_to players5758_path
+    end      
   end
 
   def delete_all

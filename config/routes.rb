@@ -2,6 +2,11 @@ Rails.application.routes.draw do
   resources :users,        only: [:new,  :create, :update, :edit]
   resources :sessions,     only: [:new,  :create, :destroy]
   resources :players,      only: [:show, :destroy]
+  resources :players do
+    collection do
+      delete 'destroy_multiple'
+    end
+  end
   root 'static_pages#home'
   match '/signup',      to: 'users#new',           via: 'get'
   match '/signin',      to: 'sessions#new',        via: 'get'
@@ -9,7 +14,7 @@ Rails.application.routes.draw do
   match '/players5758', to: 'players#show5758',    via: 'get'
   match '/players5960', to: 'players#show5960',    via: 'get'
   match '/get_info',    to: 'players#get_info',    via: 'get'
-  match '/delete_all',  to: 'players#delete_all',  via: 'get', as: 'delete_all'
+  match '/delete_all',  to: 'players#delete_all',  via: 'post', as: 'delete_all'
   # match '/get_NT_info', to: 'players#get_NT_info', via: 'post'
   # match '/login_HA',    to: 'players#login_HA',    via: 'get'
   # The priority is based upon order of creation: first created -> highest priority.
