@@ -1,20 +1,24 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  def show5758
+  def show5960
     @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age IN (19,20)')
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=19').to_a
+    @distinct.delete_if do |player|
+      new_player = Player.find_by name: player["name"], age: 20
+      new_player.nil? ? false : true
+    end
     @players = []
     @distinct.each do |distinct|
       @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
     end
   end
 
-  def show5960
+  def show6162
     @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=18').to_a
+    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=17').to_a
     @distinct.delete_if do |player|
-      new_player = Player.find_by name: player["name"], age: 19
+      new_player = Player.find_by name: player["name"], age: 18
       new_player.nil? ? false : true
     end
     @players = []
@@ -36,10 +40,10 @@ class PlayersController < ApplicationController
     Player.destroy_all(id: params[:player_ids])
     flash[:success] = "#{num_instances} instances of #{player_name} deleted."
     if player_age == 17 || player_age == 18
-      redirect_to players5960_path
+      redirect_to players6162_path
     else
-      redirect_to players5758_path
-    end      
+      redirect_to players5960_path
+    end
   end
 
   def delete_all
@@ -48,10 +52,10 @@ class PlayersController < ApplicationController
     player_age = player.age
     Player.delete_all(["name = ?", player_name])
     flash[:success] = "All instances of #{player_name} deleted."
-    if player_age == 17
-      redirect_to players5960_path
+    if player_age == 17 || player_age == 18
+      redirect_to players6162_path
     else
-      redirect_to players5758_path
+      redirect_to players5960_path
     end
   end
 
@@ -61,7 +65,7 @@ class PlayersController < ApplicationController
 
   def get_info
     UpdateJob.new.async.perform()
-    redirect_to players5758_path
+    redirect_to players5960_path
   end
 
   # def get_NT_info
