@@ -14,14 +14,14 @@ class UpdateJob
     :issuer => ENV['google_issuer'],
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
-#  @@doc5758 = @@session.spreadsheet_by_key(ENV['5758_key'])
-#  @@ws20 = @@doc5758.worksheet_by_title('Players20')
   @@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
-  @@ws18 = @@doc5960.worksheet_by_title('Players19')
+  @@ws19 = @@doc5960.worksheet_by_title('Players19')
+  @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
+  @@ws17 = @@doc6162.worksheet_by_title('Players17')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
   @@wsMSYS = @@docYS.worksheet_by_title('MS YS')
-  @@total_players = @@ws18.num_rows - 1 #@@ws20.num_rows
+  @@total_players = @@ws19.num_rows + @@ws17.num_rows - 2
   @@player_number = 0
 
   def perform
@@ -150,33 +150,33 @@ class UpdateJob
       form.password = ENV['HA_password']
       form.submit
 
-#      # Update 19/20yo
-#      for b in 2..@@ws20.num_rows
-#        unless @@ws20[b,29] == 'y'
-#          @@player_number += 1
-#          string = "Updating #{@@ws20[b,1]} (#{@@player_number} of #{@@total_players})"
-#          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-#          begin
-#            @@agent = update_player(@@ws20, b, @@agent, false)
-#          rescue Nokogiri::XML::XPath::SyntaxError => e
-#            puts "**********Happening here in second loop: #{@@ws20[b,1]}**********"
-#            @@player_number -= 1
-#            redo
-#          end
-#        end
-#      end
-
       # Update 17/18yo
-      for a in 2..@@ws18.num_rows
+      for a in 2..@@ws19.num_rows
         @@player_number += 1
-        string = "Updating #{@@ws18[a,1]} (#{@@player_number} of #{@@total_players})"
+        string = "Updating #{@@ws19[a,1]} (#{@@player_number} of #{@@total_players})"
         Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
         begin
-          @@agent = update_player(@@ws18, a, @@agent, false)
+          @@agent = update_player(@@ws19, a, @@agent, false)
         rescue Nokogiri::XML::XPath::SyntaxError => e
-          puts "**********Happening here in first loop: #{@@ws18[a,1]}**********"
+          puts "**********Happening here in first loop: #{@@ws19[a,1]}**********"
           @@player_number -= 1
           redo
+        end
+      end
+      
+      # Update 17/18yo
+      for b in 2..@@ws17.num_rows
+        unless @@ws17[b,29] == 'y'
+          @@player_number += 1
+          string = "Updating #{@@ws17[b,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
+          begin
+            @@agent = update_player(@@ws17, b, @@agent, false)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in second loop: #{@@ws17[b,1]}**********"
+            @@player_number -= 1
+            redo
+          end
         end
       end
     end
@@ -192,22 +192,22 @@ class UpdateJob
       form.submit
 
       # Update players scouted by assistant
-      # for b in 2..@@ws18.num_rows
-      #   if @@ws18[b,29] == 'y'
-      #     @@player_number += 1
-      #     string = "Updating #{@@ws18[b,1]} (#{@@player_number} of #{@@total_players})"
-      #     Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-      #     begin
-      #       @@agent = update_player(@@ws18, b, @@agent, true)
-      #     rescue Nokogiri::XML::XPath::SyntaxError => e
-      #       puts "**********Happening here in second loop: #{@@ws18[b,1]}**********"
-      #       @@player_number -= 1
-      #       redo
-      #     end
-      #   end
-      # end
+      for b in 2..@@ws17.num_rows
+        if @@ws17[b,29] == 'y'
+          @@player_number += 1
+          string = "Updating #{@@ws17[b,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
+          begin
+            @@agent = update_player(@@ws17, b, @@agent, true)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in second loop: #{@@ws17[b,1]}**********"
+            @@player_number -= 1
+            redo
+          end
+        end
+      end
 
-      # Pusher.trigger('players_channel', 'update', { message: '', progress: 0 })
+      Pusher.trigger('players_channel', 'update', { message: '', progress: 0 })
     end
 
     def strip_percent(value)
