@@ -18,22 +18,250 @@ class UpdateJob
   @@ws19 = @@doc5960.worksheet_by_title('Players19')
   @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
   @@ws17 = @@doc6162.worksheet_by_title('Players17')
+  @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
+  @@wsNT = @@docNT.worksheet_by_title('Season 59')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
   @@wsMSYS = @@docYS.worksheet_by_title('MS YS')
-  @@total_players = @@ws19.num_rows + @@ws17.num_rows - 2
+  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
 
   def perform
-    update_U20_mgr
-    ys_mgr(@@wsSpeedyYS)
-    update_U20_asst
-    ys_mgr(@@wsMSYS)
+    update_u20(true, 'speedysportwhiz', @@ws19)
+    update_u20(false, 'speedysportwhiz', @@ws17)
+    update_nt(false, 'speedysportwhiz', @@wsNT)
+    update_ys(@@wsSpeedyYS)
+    update_u20(true, 'magicspeedo', @@ws17)
+    update_nt(false, 'magicspeedo', @@wsNT)
+    update_ys(@@wsMSYS)
   end
 
   private
+  
+    def update_u20(login, mgr, ws)
+      if login
+        # Login to HA
+        Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as #{mgr}', progress: 0 })
+        @@agent = Mechanize.new
+        @@agent.get('http://www.hockeyarena.net/en/')
+        form = @@agent.page.forms.first
+        form.nick = mgr
+        form.password = ENV['HA_password']
+        form.submit
+      end
+      
+      # Update ws
+      for a in 2..ws.num_rows
+        if mgr == 'speedysportwhiz' && ws[a,29] != 'y'
+          @@player_number += 1
+          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
+          begin
+            @@agent = update_u20_player(ws, a, @@agent, false)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in first loop: #{ws[a,1]}**********"
+            @@player_number -= 1
+            redo
+          end
+        elsif mgr == 'magicspeedo' && ws[a,29] == 'y'
+          @@player_number += 1
+          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
+          begin
+            @@agent = update_u20_player(ws, a, @@agent, true)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in first loop: #{ws[a,1]}**********"
+            @@player_number -= 1
+            redo
+          end
+        end
+      end
+    end
+    
+    def update_nt(login, mgr, ws)
+      if login
+        # Login to HA
+        Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as #{mgr}', progress: 0 })
+        @@agent = Mechanize.new
+        @@agent.get('http://www.hockeyarena.net/en/')
+        form = @@agent.page.forms.first
+        form.nick = mgr
+        form.password = ENV['HA_password']
+        form.submit
+      end
+      
+      # Update ws
+      for a in 2..ws.num_rows
+        if mgr == 'speedysportwhiz' && ws[a,29] == 'y'
+          @@player_number += 1
+          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
+          begin
+            @@agent = update_nt_player(ws, a, @@agent, false)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in first loop: #{ws[a,1]}**********"
+            @@player_number -= 1
+            redo
+          end
+        elsif mgr == 'magicspeedo' && ws[a,29] != 'y'
+          @@player_number += 1
+          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
+          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
+          begin
+            @@agent = update_nt_player(ws, a, @@agent, true)
+          rescue Nokogiri::XML::XPath::SyntaxError => e
+            puts "**********Happening here in first loop: #{ws[a,1]}**********"
+            @@player_number -= 1
+            redo
+          end
+        end
+      end
+    end
 
-    def ys_mgr(ws)
+    def strip_percent(value)
+      if value[2] == '('
+        return value[0]
+      elsif value[3] == '('
+        return value[0..1]
+      elsif value[4] == '('
+        return value[0..2]
+      else
+        return value
+      end
+    end
+
+    def update_u20_player(ws, i, agent, asst)
+      id = ws[i,28]
+      agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
+
+      player_info = []
+      agent.page.search('.q1, .q').each do |info|
+        player_info << info.text
+      end
+
+      ws[i,2] = player_info[0] #ai
+
+      if player_info.size > 35 #player is scouted
+        ws[i,7] = strip_percent(player_info[16]) #goa
+        ws[i,8] = strip_percent(player_info[18]) #def
+        ws[i,9] = strip_percent(player_info[20]) #off
+        ws[i,10] = strip_percent(player_info[22]) #shot
+        ws[i,11] = strip_percent(player_info[24]) #pass
+        ws[i,12] = strip_percent(player_info[17]) #spd
+        ws[i,13] = strip_percent(player_info[19]) #str
+        ws[i,14] = strip_percent(player_info[21]) #sco
+        ws[i,16] = strip_percent(player_info[25]) #exp
+
+        if (!asst && player_info[5] == 'RIT Tigers') || (asst && player_info[5] == 'McDeedo Punch')
+          ws[i,21] = player_info[34] #games
+          ws[i,22] = player_info[36] #min
+        else
+          ws[i,21] = player_info[31] #games
+          ws[i,22] = player_info[33] #min
+        end
+      else #player isn't scouted
+        ws[i,21] = player_info[19] #games
+        ws[i,22] = player_info[21] #min
+      end
+
+      if agent.page.link_with(:text => player_info[5]).nil?
+        for a in 2..27
+          ws[i,a] = "DELETE"
+        end
+      else
+        agent.page.link_with(:text => player_info[5]).click
+      end
+      team_id = agent.page.uri.to_s[77..-1]
+      agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
+      stadium_info = []
+      agent.page.search('.sr1 .yspscores').each do |info|
+        stadium_info << info.text.strip
+      end
+
+      if stadium_info[3][0] == '0' #stadium-training
+        ws[i,5] = 0
+      else
+        ws[i,5] = stadium_info[3][0..2]
+      end
+
+      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[2], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
+        stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
+        strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
+
+      begin
+        ws.synchronize #save and reload
+      rescue GoogleDrive::Error => e
+        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
+      end
+
+      agent
+    end
+    
+    def update_nt_player(ws, i, agent, asst)
+      id = ws[i,28]
+      agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
+
+      player_info = []
+      agent.page.search('.q1, .q').each do |info|
+        player_info << info.text
+      end
+      
+      ws[i,2] = player_info[2] #age
+      ws[i,3] = player_info[0] #ai
+
+      if player_info.size > 35 #player is scouted
+        ws[i,8] = strip_percent(player_info[16]) #goa
+        ws[i,9] = strip_percent(player_info[18]) #def
+        ws[i,10] = strip_percent(player_info[20]) #off
+        ws[i,11] = strip_percent(player_info[22]) #shot
+        ws[i,12] = strip_percent(player_info[24]) #pass
+        ws[i,13] = strip_percent(player_info[17]) #spd
+        ws[i,14] = strip_percent(player_info[19]) #str
+        ws[i,15] = strip_percent(player_info[21]) #sco
+        ws[i,17] = strip_percent(player_info[25]) #exp
+
+        if (!asst && player_info[5] == 'RIT Tigers') || (asst && player_info[5] == 'McDeedo Punch')
+          ws[i,22] = player_info[34] #games
+          ws[i,23] = player_info[36] #min
+        else
+          ws[i,22] = player_info[31] #games
+          ws[i,23] = player_info[33] #min
+        end
+      else #player isn't scouted
+        ws[i,22] = player_info[19] #games
+        ws[i,23] = player_info[21] #min
+      end
+
+      if agent.page.link_with(:text => player_info[5]).nil?
+        for a in 2..27
+          ws[i,a] = "DELETE"
+        end
+      else
+        agent.page.link_with(:text => player_info[5]).click
+      end
+      team_id = agent.page.uri.to_s[77..-1]
+      agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
+      stadium_info = []
+      agent.page.search('.sr1 .yspscores').each do |info|
+        stadium_info << info.text.strip
+      end
+
+      if stadium_info[3][0] == '0' #stadium-training
+        ws[i,6] = 0
+      else
+        ws[i,6] = stadium_info[3][0..2]
+      end
+
+      begin
+        ws.synchronize #save and reload
+      rescue GoogleDrive::Error => e
+        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
+      end
+
+      agent
+    end
+    
+    def update_ys(ws)
       # Update my YS players
       ys_info = []
       player_info = []
@@ -135,151 +363,5 @@ class UpdateJob
       end
 
       ws.synchronize
-    end
-
-    def update_U20_mgr
-      # Login to Google
-      Pusher.trigger('players_channel', 'update', { message: 'Logging into Google Docs', progress: 0 })
-
-      # Login to HA
-      Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as speedysportwhiz', progress: 0 })
-      @@agent = Mechanize.new
-      @@agent.get('http://www.hockeyarena.net/en/')
-      form = @@agent.page.forms.first
-      form.nick = ENV['HA_nick']
-      form.password = ENV['HA_password']
-      form.submit
-
-      # Update 17/18yo
-      for a in 2..@@ws19.num_rows
-        @@player_number += 1
-        string = "Updating #{@@ws19[a,1]} (#{@@player_number} of #{@@total_players})"
-        Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-        begin
-          @@agent = update_player(@@ws19, a, @@agent, false)
-        rescue Nokogiri::XML::XPath::SyntaxError => e
-          puts "**********Happening here in first loop: #{@@ws19[a,1]}**********"
-          @@player_number -= 1
-          redo
-        end
-      end
-      
-      # Update 17/18yo
-      for b in 2..@@ws17.num_rows
-        unless @@ws17[b,29] == 'y'
-          @@player_number += 1
-          string = "Updating #{@@ws17[b,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-          begin
-            @@agent = update_player(@@ws17, b, @@agent, false)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in second loop: #{@@ws17[b,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        end
-      end
-    end
-
-    def update_U20_asst
-      # Login as assistant
-      Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as magicspeedo', progress: @@player_number/@@total_players*100.0 })
-      @@agent = Mechanize.new
-      @@agent.get('http://www.hockeyarena.net/en/')
-      form = @@agent.page.forms.first
-      form.nick = ENV['HA_assistant']
-      form.password = ENV['HA_password']
-      form.submit
-
-      # Update players scouted by assistant
-      for b in 2..@@ws17.num_rows
-        if @@ws17[b,29] == 'y'
-          @@player_number += 1
-          string = "Updating #{@@ws17[b,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: @@player_number/@@total_players*100.0 })
-          begin
-            @@agent = update_player(@@ws17, b, @@agent, true)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in second loop: #{@@ws17[b,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        end
-      end
-
-      Pusher.trigger('players_channel', 'update', { message: '', progress: 0 })
-    end
-
-    def strip_percent(value)
-      if value[2] == '('
-        return value[0]
-      elsif value[3] == '('
-        return value[0..1]
-      elsif value[4] == '('
-        return value[0..2]
-      else
-        return value
-      end
-    end
-
-    def update_player(ws, i, agent, asst)
-      id = ws[i,28]
-      agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
-
-      player_info = []
-      agent.page.search('.q1, .q').each do |info|
-        player_info << info.text
-      end
-
-      ws[i,2] = player_info[0] #ai
-
-      if player_info.size > 35 #player is scouted
-        ws[i,7] = strip_percent(player_info[16]) #goa
-        ws[i,8] = strip_percent(player_info[18]) #def
-        ws[i,9] = strip_percent(player_info[20]) #off
-        ws[i,10] = strip_percent(player_info[22]) #shot
-        ws[i,11] = strip_percent(player_info[24]) #pass
-        ws[i,12] = strip_percent(player_info[17]) #spd
-        ws[i,13] = strip_percent(player_info[19]) #str
-        ws[i,14] = strip_percent(player_info[21]) #sco
-        ws[i,16] = strip_percent(player_info[25]) #exp
-
-        if (!asst && player_info[5] == 'RIT Tigers') || (asst && player_info[5] == 'McDeedo Punch')
-          ws[i,21] = player_info[34] #games
-          ws[i,22] = player_info[36] #min
-        else
-          ws[i,21] = player_info[31] #games
-          ws[i,22] = player_info[33] #min
-        end
-      else #player isn't scouted
-        ws[i,21] = player_info[19] #games
-        ws[i,22] = player_info[21] #min
-      end
-
-      agent.page.link_with(:text => player_info[5]).click
-      team_id = agent.page.uri.to_s[77..-1]
-      agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
-      stadium_info = []
-      agent.page.search('.sr1 .yspscores').each do |info|
-        stadium_info << info.text.strip
-      end
-
-      if stadium_info[3][0] == '0' #stadium-training
-        ws[i,5] = 0
-      else
-        ws[i,5] = stadium_info[3][0..2]
-      end
-
-      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[2], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
-        stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
-        strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
-
-      begin
-        ws.synchronize #save and reload
-      rescue GoogleDrive::Error => e
-        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
-      end
-
-      agent
     end
 end
