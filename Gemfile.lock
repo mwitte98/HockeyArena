@@ -390,3 +390,6 @@ DEPENDENCIES
   unicorn
   wdm (= 0.1.0)
   will_paginate (= 3.0.7)
+
+BUNDLED WITH
+   1.10.4
