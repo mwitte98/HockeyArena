@@ -21,35 +21,51 @@ class UpdateJob
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
   @@wsNT = @@docNT.worksheet_by_title('Season 59')
   @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
-  @@wsSpeedyYS = @@docYS.worksheet_by_title('speedy YS')
-  @@wsMSYS = @@docYS.worksheet_by_title('MS YS')
   @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
 
   def perform
-    update_u20(true, 'speedysportwhiz', @@ws19)
-    update_u20(false, 'speedysportwhiz', @@ws17)
-    update_nt(false, 'speedysportwhiz', @@wsNT)
-    update_ys(@@wsSpeedyYS)
-    update_u20(true, 'magicspeedo', @@ws17)
-    update_nt(false, 'magicspeedo', @@wsNT)
-    update_ys(@@wsMSYS)
+    login_to_HA('speedysportwhiz', 'live')
+    update_u20('speedysportwhiz', @@ws19)
+    update_u20('speedysportwhiz', @@ws17)
+    update_nt('speedysportwhiz', @@wsNT)
+    update_ys('speedysportwhiz', 'live', false)
+    update_ys('speedysportwhiz', 'live', true)
+    login_to_HA('magicspeedo', 'live')
+    update_u20('magicspeedo', @@ws17)
+    update_nt('magicspeedo', @@wsNT)
+    update_ys('magicspeedo', 'live', false)
+    update_ys('magicspeedo', 'live', true)
+    login_to_HA('speedysportwhiz', 'beta')
+    update_ys('speedysportwhiz', 'beta', false)
+    update_ys('speedysportwhiz', 'beta', true)
+    login_to_HA('magicspeedo', 'beta')
+    update_ys('magicspeedo', 'beta', false)
+    update_ys('magicspeedo', 'beta', true)
   end
 
   private
   
-    def update_u20(login, mgr, ws)
-      if login
-        # Login to HA
-        Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as #{mgr}', progress: 0 })
-        @@agent = Mechanize.new
+    def login_to_HA(mgr, version)
+      # Login to HA
+      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}", progress: 0 })
+      @@agent = Mechanize.new
+      if version == "live"
         @@agent.get('http://www.hockeyarena.net/en/')
-        form = @@agent.page.forms.first
-        form.nick = mgr
-        form.password = ENV['HA_password']
-        form.submit
+      else
+        @@agent.get('http://beta.hockeyarena.net/en/')
       end
-      
+      form = @@agent.page.forms.first
+      form.nick = mgr
+      if version == "live"
+        form.password = ENV['HA_password']
+      else
+        form.password = ENV['beta_password']
+      end
+      form.submit
+    end
+  
+    def update_u20(mgr, ws)
       # Update ws
       for a in 2..ws.num_rows
         if mgr == 'speedysportwhiz' && ws[a,29] != 'y'
@@ -78,18 +94,7 @@ class UpdateJob
       end
     end
     
-    def update_nt(login, mgr, ws)
-      if login
-        # Login to HA
-        Pusher.trigger('players_channel', 'update', { message: 'Logging into Hockey Arena as #{mgr}', progress: 0 })
-        @@agent = Mechanize.new
-        @@agent.get('http://www.hockeyarena.net/en/')
-        form = @@agent.page.forms.first
-        form.nick = mgr
-        form.password = ENV['HA_password']
-        form.submit
-      end
-      
+    def update_nt(mgr, ws)
       # Update ws
       for a in 2..ws.num_rows
         if mgr == 'speedysportwhiz' && ws[a,29] == 'y'
@@ -261,13 +266,23 @@ class UpdateJob
       agent
     end
     
-    def update_ys(ws)
-      # Update my YS players
+    def update_ys(mgr, version, draft)
+      # Update youth school
+      Pusher.trigger('players_channel', 'update', { message: "Updating #{mgr} #{version} YS and draft", progress: 0 })
       ys_info = []
       player_info = []
       count = 0
-      @@agent.get("http://www.hockeyarena.net/en/index.php?p=manager_youth_school_form.php")
-      @@agent.page.search('#table-1 tbody td').each do |info| # Pull YS info from site
+      if version == "live"
+        @@agent.get("http://www.hockeyarena.net/en/index.php?p=manager_youth_school_form.php")
+      else
+        @@agent.get("http://beta.hockeyarena.net/en/index.php?p=manager_youth_school_form.php")
+      end
+      if draft
+        search_string = '#table-2 tbody .center , #table-2 tbody .left , #table-3 tbody .center , #table-3 tbody .left'
+      else
+        search_string = '#table-1 tbody td'
+      end
+      @@agent.page.search(search_string).each do |info| # Pull YS info from site
         count += 1
         if count > 0 && count < 7
           if count == 2 || count == 5
@@ -275,7 +290,7 @@ class UpdateJob
           else
             player_info << info.text.strip[1..-1]
           end
-        elsif count == 9
+        elsif (!draft and count == 9) or (draft and count == 8)
           ys_info << player_info
           count = 0
           player_info = []
@@ -289,79 +304,31 @@ class UpdateJob
 
       # Names of all players that have been tracked
       names_in_doc = []
-      for a in 2..ws.num_rows
-        names_in_doc << ws[a,1]
+      players_in_doc = YouthSchool.where({ manager: mgr, version: version, draft: draft })
+      players_in_doc.each do |player|
+        names_in_doc << player["name"]
       end
-
-      names_add = names - names_in_doc
-      names_remove = names_in_doc - names
-
-      # Remove info of deleted players from doc
-      if !names_remove.empty?
-        sheet_rows = ws.rows
-        names_remove.each do |name|
-          for a in 2..ws.num_rows
-            if ws[a,1] == name
-              rows_adding = sheet_rows.drop(a)
-              ws.update_cells(a,1,rows_adding)
-              for b in 1..ws.num_cols
-                ws[ws.num_rows, b] = ''
-              end
-            end
-          end
+      
+      #Delete players from db that have been deleted on HA
+      names_in_doc.each do |name|
+        if not names.include?(name)
+          YouthSchool.find_by({ name: name, manager: mgr, version: version, draft: draft }).delete
         end
       end
-
-      # Add new players to the doc
-      if !names_add.empty?
-        sheet_rows = ws.rows(skip=1)
-        add_num = names_add.size
-        ws.update_cells(add_num+2,1,sheet_rows)
-        for a in 2..(add_num+1)
-          for b in 1..ws.num_cols
-            ws[a,b] = ""
-          end
-          ws[a,1] = names_add[a-2]
+      
+      #Add new day to db
+      player_priority = 1
+      ys_info.each do |player|
+        player_in_db = YouthSchool.find_by({ name: player[0], manager: mgr, version: version, draft: draft })
+        if player_in_db.nil?
+          YouthSchool.create!(name: player[0], age: player[1], quality: player[2], potential: player[3], talent: player[4],
+            ai: { DateTime.now => player[5] }, priority: player_priority, manager: mgr, version: version, draft: draft)
+        else
+          ai_hash = player_in_db["ai"]
+          ai_hash[DateTime.now] = player[5]
+          player_in_db.update(age: player[1], quality: player[2], potential: player[3], talent: player[4], ai: ai_hash, priority: player_priority)
         end
+        player_priority += 1
       end
-
-      # TODO: Remove empty AI columns if oldest pull is removed
-
-      # Update player info and add new AI
-      for a in 0..(ys_info.size-1)
-        ws[a+2,2] = ys_info[a][1] #age
-        ws[a+2,3] = ys_info[a][2] #qua
-        ws[a+2,4] = ys_info[a][3] #pot
-        ws[a+2,5] = ys_info[a][4] #pos
-        ai = ys_info[a][5]
-        if ai.size == 7
-          ai = ai[0..1]
-        elsif ai.size == 8
-          ai = ai[0..2]
-        end
-        ws[a+2,ws.num_cols-4] = ai #ai
-      end
-
-      # Update AI column header with date
-      time = Time.now.getgm + 1.days
-      ws[1,ws.num_cols-4] = "#{time.day}.#{time.month}"
-
-      # Update formulas
-      ws[1,ws.num_cols-3] = "Avg"
-      ws[1,ws.num_cols-2] = "Min"
-      ws[1,ws.num_cols-1] = "Med"
-      ws[1,ws.num_cols] = "Max"
-      ws[1,ws.num_cols+1] = " "
-      num_cols = ws.num_cols
-      for a in 2..ws.num_rows
-        lastAiCell = RubyXL::Reference.ind2ref(a-1,num_cols-6)
-        ws[a,num_cols-4] = "=AVERAGE(F#{a}:#{lastAiCell})"
-        ws[a,num_cols-3] = "=MIN(F#{a}:#{lastAiCell})"
-        ws[a,num_cols-2] = "=MEDIAN(F#{a}:#{lastAiCell})"
-        ws[a,num_cols-1] = "=MAX(F#{a}:#{lastAiCell})"
-        ws[a,num_cols] = "=IF(B#{a}=16,COUNTIF(F#{a}:#{lastAiCell},\">=40\"),IF(B#{a}=17,COUNTIF(F#{a}:#{lastAiCell},\">=70\"),IF(B#{a}=18,COUNTIF(F#{a}:#{lastAiCell},\">=100\"),0)))"
-      end
-
-      ws.synchronize
     end
 end

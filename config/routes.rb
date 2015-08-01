@@ -8,15 +8,23 @@ Rails.application.routes.draw do
     end
   end
   root 'static_pages#home'
-  match '/signup',      to: 'users#new',           via: 'get'
-  match '/signin',      to: 'sessions#new',        via: 'get'
-  match '/signout',     to: 'sessions#destroy',    via: 'delete'
-  match '/players5960', to: 'players#show5960',    via: 'get'
-  match '/players6162', to: 'players#show6162',    via: 'get'
-  match '/get_info',    to: 'players#get_info',    via: 'get'
-  match '/delete_all',  to: 'players#delete_all',  via: 'post', as: 'delete_all'
-  # match '/get_NT_info', to: 'players#get_NT_info', via: 'post'
-  # match '/login_HA',    to: 'players#login_HA',    via: 'get'
+  match '/signup',          to: 'users#new',           via: 'get'
+  match '/signin',          to: 'sessions#new',        via: 'get'
+  match '/signout',         to: 'sessions#destroy',    via: 'delete'
+  match '/players5960',     to: 'players#show5960',    via: 'get'
+  match '/players6162',     to: 'players#show6162',    via: 'get'
+  match '/get_info',        to: 'players#get_info',    via: 'get'
+  match '/delete_all',      to: 'players#delete_all',  via: 'post', as: 'delete_all'
+  match '/speedoBetaDraft', to: 'youth_school#speedoBetaDraft', via: 'get'
+  match '/speedoBetaYS',    to: 'youth_school#speedoBetaYS',    via: 'get'
+  match '/speedoLiveDraft', to: 'youth_school#speedoLiveDraft', via: 'get'
+  match '/speedoLiveYS',    to: 'youth_school#speedoLiveYS',    via: 'get'
+  match '/speedyBetaDraft', to: 'youth_school#speedyBetaDraft', via: 'get'
+  match '/speedyBetaYS',    to: 'youth_school#speedyBetaYS',    via: 'get'
+  match '/speedyLiveDraft', to: 'youth_school#speedyLiveDraft', via: 'get'
+  match '/speedyLiveYS',    to: 'youth_school#speedyLiveYS',    via: 'get'
+  # match '/get_NT_info',   to: 'players#get_NT_info', via: 'post'
+  # match '/login_HA',      to: 'players#login_HA',    via: 'get'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
