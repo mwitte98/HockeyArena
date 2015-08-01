@@ -5,9 +5,27 @@
       <ul class="nav navbar-nav navbar-right">
         <li><%= link_to "Home", root_path %></li>
         <% if signed_in? %>
-          <li><%= link_to "Players:59-60", players5960_path %></li>
-          <li><%= link_to "Players:61-62", players6162_path %></li>
-          <li id="fat-menu" class="dropdown">
+          <li><%= link_to "U20:59-60", players5960_path %></li>
+          <li><%= link_to "U20:61-62", players6162_path %></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Youth School <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><%= link_to "speedysportwhiz - Live", speedyLiveYS_path %></li>
+              <li><%= link_to "speedysportwhiz - Beta", speedyBetaYS_path %></li>
+              <li><%= link_to "magicspeedo - Live", speedoLiveYS_path %></li>
+              <li><%= link_to "magicspeedo - Beta", speedoBetaYS_path %></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Draft <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><%= link_to "speedysportwhiz - Live", speedyLiveDraft_path %></li>
+              <li><%= link_to "speedysportwhiz - Beta", speedyBetaDraft_path %></li>
+              <li><%= link_to "magicspeedo - Live", speedoLiveDraft_path %></li>
+              <li><%= link_to "magicspeedo - Beta", speedoBetaDraft_path %></li>
+            </ul>
+          </li>
+          <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><%= link_to "Edit profile", edit_user_path(current_user) %></li>

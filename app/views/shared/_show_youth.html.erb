@@ -1,0 +1,49 @@
+<table style="margin-top: 20px">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Quality</th>
+      <th>Potential</th>
+      <th>Talent</th>
+      <% @dates.each do |date| %>
+        <th><%= date %></th>
+      <% end %>
+      <th>Avg</th>
+      <th>Min</th>
+      <th>Med</th>
+      <th>Max</th>
+      <th>>AI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @players.each_with_index do |player, index| %>
+      <tr>
+        <td><%= player.name %></td>
+        <td><%= player.age %></td>
+        <td><%= player.quality %></td>
+        <td><%= player.potential %></td>
+        <td><%= player.talent %></td>
+        <% if @dates.size - player.ai.keys.size > 0 %>
+          <% (1..(@dates.size - player.ai.keys.size)).each do |blanks| %>
+            <td></td>
+          <% end %>
+        <% end %>
+        <% @ai_array[index].each do |ai| %>
+          <% if (player.age == 16 and ai >= 40) or (player.age == 17 and ai >= 70) or (player.age == 18 and ai >= 100) %>
+            <td class="blue"><%= ai %></td>
+          <% elsif (player.age == 16 and ai >= 35) or (player.age == 17 and ai >= 65) or (player.age == 18 and ai >= 95) %>
+            <td class="green"><%= ai %></td>
+          <% else %>
+            <td><%= ai %></td>
+          <% end %>
+        <% end %>
+        <td><%= sprintf("%.2f", @calculations[index][0]) %></td>
+        <td><%= @calculations[index][1] %></td>
+        <td><%= @calculations[index][2] %></td>
+        <td><%= @calculations[index][3] %></td>
+        <td><%= @calculations[index][4] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
