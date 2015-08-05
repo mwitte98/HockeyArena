@@ -20,20 +20,19 @@ class UpdateJob
   @@ws17 = @@doc6162.worksheet_by_title('Players17')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
   @@wsNT = @@docNT.worksheet_by_title('Season 59')
-  @@docYS = @@session.spreadsheet_by_key(ENV['YS_key'])
   @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
-    update_u20('speedysportwhiz', @@ws19)
-    update_u20('speedysportwhiz', @@ws17)
-    update_nt('speedysportwhiz', @@wsNT)
+    update_team('speedysportwhiz', @@ws19, '5960')
+    update_team('speedysportwhiz', @@ws17, '6162')
+    update_team('speedysportwhiz', @@wsNT, 'senior')
     update_ys('speedysportwhiz', 'live', false)
     update_ys('speedysportwhiz', 'live', true)
     login_to_HA('magicspeedo', 'live')
-    update_u20('magicspeedo', @@ws17)
-    update_nt('magicspeedo', @@wsNT)
+    update_team('magicspeedo', @@ws17, '6162')
+    update_team('magicspeedo', @@wsNT, 'senior')
     update_ys('magicspeedo', 'live', false)
     update_ys('magicspeedo', 'live', true)
     login_to_HA('speedysportwhiz', 'beta')
@@ -48,7 +47,7 @@ class UpdateJob
   
     def login_to_HA(mgr, version)
       # Login to HA
-      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}", progress: 0 })
+      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}" })
       @@agent = Mechanize.new
       if version == "live"
         @@agent.get('http://www.hockeyarena.net/en/')
@@ -65,28 +64,19 @@ class UpdateJob
       form.submit
     end
   
-    def update_u20(mgr, ws)
-      # Update ws
+    def update_team(mgr, ws, team)
+      # Update team
       for a in 2..ws.num_rows
-        if mgr == 'speedysportwhiz' && ws[a,29] != 'y'
+        if ((team != 'senior' && mgr == 'speedysportwhiz' && ws[a,29] != 'y') ||
+          (team != 'senior' && mgr == 'magicspeedo' && ws[a,29] == 'y') ||
+          (team == 'senior' && mgr == 'speedysportwhiz' && ws[a,29] == 'y') ||
+          (team == 'senior' && mgr == 'magicspeedo' && ws[a,29] != 'y'))
           @@player_number += 1
           string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
+          Pusher.trigger('players_channel', 'update', { message: string })
           begin
-            @@agent = update_u20_player(ws, a, @@agent, false)
+            @@agent = update_player(ws, team, a, @@agent, mgr)
           rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in first loop: #{ws[a,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        elsif mgr == 'magicspeedo' && ws[a,29] == 'y'
-          @@player_number += 1
-          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
-          begin
-            @@agent = update_u20_player(ws, a, @@agent, true)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in first loop: #{ws[a,1]}**********"
             @@player_number -= 1
             redo
           end
@@ -94,35 +84,6 @@ class UpdateJob
       end
     end
     
-    def update_nt(mgr, ws)
-      # Update ws
-      for a in 2..ws.num_rows
-        if mgr == 'speedysportwhiz' && ws[a,29] == 'y'
-          @@player_number += 1
-          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
-          begin
-            @@agent = update_nt_player(ws, a, @@agent, false)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in first loop: #{ws[a,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        elsif mgr == 'magicspeedo' && ws[a,29] != 'y'
-          @@player_number += 1
-          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: 0 })
-          begin
-            @@agent = update_nt_player(ws, a, @@agent, true)
-          rescue Nokogiri::XML::XPath::SyntaxError => e
-            puts "**********Happening here in first loop: #{ws[a,1]}**********"
-            @@player_number -= 1
-            redo
-          end
-        end
-      end
-    end
-
     def strip_percent(value)
       if value[2] == '('
         return value[0]
@@ -135,8 +96,9 @@ class UpdateJob
       end
     end
 
-    def update_u20_player(ws, i, agent, asst)
-      id = ws[i,28]
+    def update_player(ws, team, row, agent, mgr)
+      col = team == "senior" ? 1 : 0
+      id = ws[row,28]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
 
       player_info = []
@@ -144,34 +106,37 @@ class UpdateJob
         player_info << info.text
       end
 
-      ws[i,2] = player_info[0] #ai
+      if team == "senior"
+        ws[row,2] = player_info[2] #age
+      end
+      ws[row,2+col] = player_info[0] #ai
 
       if player_info.size > 35 #player is scouted
-        ws[i,7] = strip_percent(player_info[16]) #goa
-        ws[i,8] = strip_percent(player_info[18]) #def
-        ws[i,9] = strip_percent(player_info[20]) #off
-        ws[i,10] = strip_percent(player_info[22]) #shot
-        ws[i,11] = strip_percent(player_info[24]) #pass
-        ws[i,12] = strip_percent(player_info[17]) #spd
-        ws[i,13] = strip_percent(player_info[19]) #str
-        ws[i,14] = strip_percent(player_info[21]) #sco
-        ws[i,16] = strip_percent(player_info[25]) #exp
+        ws[row,7+col] = strip_percent(player_info[16]) #goa
+        ws[row,8+col] = strip_percent(player_info[18]) #def
+        ws[row,9+col] = strip_percent(player_info[20]) #off
+        ws[row,10+col] = strip_percent(player_info[22]) #shot
+        ws[row,11+col] = strip_percent(player_info[24]) #pass
+        ws[row,12+col] = strip_percent(player_info[17]) #spd
+        ws[row,13+col] = strip_percent(player_info[19]) #str
+        ws[row,14+col] = strip_percent(player_info[21]) #sco
+        ws[row,16+col] = strip_percent(player_info[25]) #exp
 
-        if (!asst && player_info[5] == 'RIT Tigers') || (asst && player_info[5] == 'McDeedo Punch')
-          ws[i,21] = player_info[34] #games
-          ws[i,22] = player_info[36] #min
+        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'McDeedo Punch')
+          ws[row,21+col] = player_info[34] #games
+          ws[row,22+col] = player_info[36] #min
         else
-          ws[i,21] = player_info[31] #games
-          ws[i,22] = player_info[33] #min
+          ws[row,21+col] = player_info[31] #games
+          ws[row,22+col] = player_info[33] #min
         end
       else #player isn't scouted
-        ws[i,21] = player_info[19] #games
-        ws[i,22] = player_info[21] #min
+        ws[row,21+col] = player_info[19] #games
+        ws[row,22+col] = player_info[21] #min
       end
 
       if agent.page.link_with(:text => player_info[5]).nil?
         for a in 2..27
-          ws[i,a] = "DELETE"
+          ws[row,a] = "DELETE"
         end
       else
         agent.page.link_with(:text => player_info[5]).click
@@ -184,83 +149,56 @@ class UpdateJob
       end
 
       if stadium_info[3][0] == '0' #stadium-training
-        ws[i,5] = 0
+        ws[row,5+col] = 0
       else
-        ws[i,5] = stadium_info[3][0..2]
+        ws[row,5+col] = stadium_info[3][0..2]
       end
 
-      Player.create!(playerid: ws[i,28], name: ws[i,1], age: player_info[2], ai: ws[i,2], quality: ws[i,3], potential: ws[i,4],
-        stadium: ws[i,5], goalie: ws[i,7], defense: ws[i,8], offense: ws[i,9], shooting: ws[i,10], passing: ws[i,11], speed: ws[i,12],
-        strength: ws[i,13], selfcontrol: ws[i,14], playertype: ws[i,15], experience: ws[i,16], games: ws[i,21], minutes: ws[i,22])
-
+      player_in_db = Player.find_by({ name: ws[row,1], team: team })
+      if player_in_db.nil?
+        Player.create!(playerid: ws[row,28],
+                       name: ws[row,1],
+                       age: player_info[2],
+                       quality: ws[row,3+col],
+                       potential: ws[row,4+col],
+                       team: team,
+                       daily: { DateTime.now => { ai: ws[row,2+col].to_i,
+                                                  stadium: ws[row,5+col].to_i,
+                                                  goalie: ws[row,7+col].to_i,
+                                                  defense: ws[row,8+col].to_i,
+                                                  offense: ws[row,9+col].to_i,
+                                                  shooting: ws[row,10+col].to_i,
+                                                  passing: ws[row,11+col].to_i,
+                                                  speed: ws[row,12+col].to_i,
+                                                  strength: ws[row,13+col].to_i,
+                                                  selfcontrol: ws[row,14+col].to_i,
+                                                  playertype: ws[row,15+col],
+                                                  experience: ws[row,16+col].to_i,
+                                                  games: ws[row,21+col].to_i,
+                                                  minutes: ws[row,22+col].to_i } })
+      else
+        ai_hash = player_in_db["daily"]
+        ai_hash[DateTime.now] = { ai: ws[row,2+col].to_i,
+                                  stadium: ws[row,5+col].to_i,
+                                  goalie: ws[row,7+col].to_i,
+                                  defense: ws[row,8+col].to_i,
+                                  offense: ws[row,9+col].to_i,
+                                  shooting: ws[row,10+col].to_i,
+                                  passing: ws[row,11+col].to_i,
+                                  speed: ws[row,12+col].to_i,
+                                  strength: ws[row,13+col].to_i,
+                                  selfcontrol: ws[row,14+col].to_i,
+                                  playertype: ws[row,15+col],
+                                  experience: ws[row,16+col].to_i,
+                                  games: ws[row,21+col].to_i,
+                                  minutes: ws[row,22+col].to_i }
+        player_in_db.update(age: player_info[2], daily: ai_hash)
+      end
+        
       begin
         ws.synchronize #save and reload
       rescue GoogleDrive::Error => e
-        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
-      end
-
-      agent
-    end
-    
-    def update_nt_player(ws, i, agent, asst)
-      id = ws[i,28]
-      agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
-
-      player_info = []
-      agent.page.search('.q1, .q').each do |info|
-        player_info << info.text
-      end
-      
-      ws[i,2] = player_info[2] #age
-      ws[i,3] = player_info[0] #ai
-
-      if player_info.size > 35 #player is scouted
-        ws[i,8] = strip_percent(player_info[16]) #goa
-        ws[i,9] = strip_percent(player_info[18]) #def
-        ws[i,10] = strip_percent(player_info[20]) #off
-        ws[i,11] = strip_percent(player_info[22]) #shot
-        ws[i,12] = strip_percent(player_info[24]) #pass
-        ws[i,13] = strip_percent(player_info[17]) #spd
-        ws[i,14] = strip_percent(player_info[19]) #str
-        ws[i,15] = strip_percent(player_info[21]) #sco
-        ws[i,17] = strip_percent(player_info[25]) #exp
-
-        if (!asst && player_info[5] == 'RIT Tigers') || (asst && player_info[5] == 'McDeedo Punch')
-          ws[i,22] = player_info[34] #games
-          ws[i,23] = player_info[36] #min
-        else
-          ws[i,22] = player_info[31] #games
-          ws[i,23] = player_info[33] #min
-        end
-      else #player isn't scouted
-        ws[i,22] = player_info[19] #games
-        ws[i,23] = player_info[21] #min
-      end
-
-      if agent.page.link_with(:text => player_info[5]).nil?
-        for a in 2..27
-          ws[i,a] = "DELETE"
-        end
-      else
-        agent.page.link_with(:text => player_info[5]).click
-      end
-      team_id = agent.page.uri.to_s[77..-1]
-      agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
-      stadium_info = []
-      agent.page.search('.sr1 .yspscores').each do |info|
-        stadium_info << info.text.strip
-      end
-
-      if stadium_info[3][0] == '0' #stadium-training
-        ws[i,6] = 0
-      else
-        ws[i,6] = stadium_info[3][0..2]
-      end
-
-      begin
-        ws.synchronize #save and reload
-      rescue GoogleDrive::Error => e
-        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[i,1]}**********"
+        puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[row,1]}**********"
       end
 
       agent
@@ -321,12 +259,25 @@ class UpdateJob
       ys_info.each do |player|
         player_in_db = YouthSchool.find_by({ name: player[0], manager: mgr, version: version, draft: draft })
         if player_in_db.nil?
-          YouthSchool.create!(name: player[0], age: player[1], quality: player[2], potential: player[3], talent: player[4],
-            ai: { DateTime.now => player[5] }, priority: player_priority, manager: mgr, version: version, draft: draft)
+          YouthSchool.create!(name: player[0],
+                              age: player[1],
+                              quality: player[2],
+                              potential: player[3],
+                              talent: player[4],
+                              ai: { DateTime.now => player[5] },
+                              priority: player_priority,
+                              manager: mgr,
+                              version: version,
+                              draft: draft)
         else
           ai_hash = player_in_db["ai"]
           ai_hash[DateTime.now] = player[5]
-          player_in_db.update(age: player[1], quality: player[2], potential: player[3], talent: player[4], ai: ai_hash, priority: player_priority)
+          player_in_db.update(age: player[1],
+                              quality: player[2],
+                              potential: player[3],
+                              talent: player[4],
+                              ai: ai_hash,
+                              priority: player_priority)
         end
         player_priority += 1
       end
