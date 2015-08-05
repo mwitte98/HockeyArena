@@ -11,40 +11,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150725020310) do
+ActiveRecord::Schema.define(version: 20150802020853) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "players", force: :cascade do |t|
     t.integer  "playerid"
-    t.string   "name"
+    t.string   "name",       limit: 255
     t.integer  "age"
-    t.integer  "ai"
     t.integer  "quality"
-    t.string   "potential"
-    t.integer  "stadium"
-    t.integer  "goalie"
-    t.integer  "defense"
-    t.integer  "offense"
-    t.integer  "shooting"
-    t.integer  "passing"
-    t.integer  "speed"
-    t.integer  "strength"
-    t.integer  "selfcontrol"
-    t.string   "playertype"
-    t.integer  "experience"
-    t.integer  "games"
-    t.integer  "minutes"
+    t.string   "potential",  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "team"
+    t.json     "daily"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "name"
-    t.string   "email"
-    t.string   "password_digest"
-    t.string   "remember_token"
+    t.string   "name",            limit: 255
+    t.string   "email",           limit: 255
+    t.string   "password_digest", limit: 255
+    t.string   "remember_token",  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end

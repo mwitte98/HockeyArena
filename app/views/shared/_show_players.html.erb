@@ -84,10 +84,14 @@
   <p class="messages"></p>
 <% end %>
 
-<table id="players">
+<table class="players">
   <thead>
     <tr>
-      <th>Name</th>
+      <% if @player_instances.first.team == "senior" %>
+        <th>Name (Age)</th>
+      <% else %>
+        <th>Name</th>
+      <% end %>
       <th>AI</th>
       <th>Q</th>
       <th>P</th>
@@ -110,106 +114,113 @@
     </tr>
   </thead>
   <tbody>
-    <% @players.each do |player| %>
+    <% @players.each_with_index do |player, index| %>
       <tr>
         <% if player.size == 1 %>
-          <td><%= link_to player[0].name, player_path(player[0]) %></td>
-          <td><%= player[0].ai %></td>
-          <td><%= player[0].quality %></td>
-          <td><%= player[0].potential %></td>
-          <td class="stadium"><%= player[0].stadium %></td>
+          <% if @player_instances[index].team == "senior" %>
+            <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %> (<%= @player_instances[index].age %>)</td>
+          <% else %>
+            <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %></td>
+          <% end %>
+          <td><%= player[0]["ai"] %></td>
+          <td><%= @player_instances[index].quality %></td>
+          <td><%= @player_instances[index].potential %></td>
+          <td class="stadium"><%= player[0]["stadium"] %></td>
           <td class="minutes"><%= average_minutes(player[0]) %></td>
-          <td><%= player[0].goalie %></td>
-          <td><%= player[0].defense %></td>
-          <td><%= player[0].offense %></td>
-          <td><%= player[0].shooting %></td>
-          <td><%= player[0].passing %></td>
-          <td><%= player[0].speed %></td>
-          <td><%= player[0].strength %></td>
-          <td><%= player[0].selfcontrol %></td>
-          <td><%= player[0].playertype %></td>
-          <td><%= player[0].experience %></td>
+          <td><%= player[0]["goalie"] %></td>
+          <td><%= player[0]["defense"] %></td>
+          <td><%= player[0]["offense"] %></td>
+          <td><%= player[0]["shooting"] %></td>
+          <td><%= player[0]["passing"] %></td>
+          <td><%= player[0]["speed"] %></td>
+          <td><%= player[0]["strength"] %></td>
+          <td><%= player[0]["selfcontrol"] %></td>
+          <td><%= player[0]["playertype"] %></td>
+          <td><%= player[0]["experience"] %></td>
           <td><%= calculate_ai(player[0]) %></td>
-          <td class="ai_diff"><%= player[0].ai - calculate_ai(player[0]) %></td>
-          <td class="games"><%= player[0].games %></td>
-          <td><%= player[0].minutes %></td>
+          <td class="ai_diff"><%= player[0]["ai"] - calculate_ai(player[0]) %></td>
+          <td class="games"><%= player[0]["games"] %></td>
+          <td><%= player[0]["minutes"] %></td>
         <% else %>
-          <td><%= link_to player[0].name, player_path(player[0]) %></td>
+          <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %></td>
 
-          <% if player[0].ai - player[1].ai < 1 %>
-            <td><%= player[0].ai %></td>
+          <% if player[1]["ai"] - player[0]["ai"] < 1 %>
+            <td><%= player[1]["ai"] %></td>
           <% else %>
-            <td class="darkgreen"><%= player[0].ai %></td>
-          <% end %>
-
-          <td><%= player[0].quality %></td>
-          <td><%= player[0].potential %></td>
-          <td class="stadium"><%= player[0].stadium %></td>
-          <td class="minutes"><%= average_minutes(player[0]) %></td>
-
-          <% if player[0].goalie.nil? || player[1].goalie.nil? || player[0].goalie - player[1].goalie < 1 %>
-            <td><%= player[0].goalie %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].goalie %></td>
+            <td class="darkgreen"><%= player[1]["ai"] %></td>
           <% end %>
 
-          <% if player[0].defense.nil? || player[1].defense.nil? || player[0].defense - player[1].defense < 1 %>
-            <td><%= player[0].defense %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].defense %></td>
+          <% if @player_instances[index].team == "senior" %>
+            <td><%= @player_instances[index].age %></td>
           <% end %>
-          
-          <% if player[0].offense.nil? || player[1].offense.nil? || player[0].offense - player[1].offense < 1 %>
-            <td><%= player[0].offense %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].offense %></td>
-          <% end %>
-          
-          <% if player[0].shooting.nil? || player[1].shooting.nil? || player[0].shooting - player[1].shooting < 1 %>
-            <td><%= player[0].shooting %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].shooting %></td>
-          <% end %>
-          
-          <% if player[0].passing.nil? || player[1].passing.nil? || player[0].passing - player[1].passing < 1 %>
-            <td><%= player[0].passing %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].passing %></td>
-          <% end %>
-          
-          <% if player[0].speed.nil? || player[1].speed.nil? || player[0].speed - player[1].speed < 1 %>
-            <td><%= player[0].speed %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].speed %></td>
-          <% end %>
-          
-          <% if player[0].strength.nil? || player[1].strength.nil? || player[0].strength - player[1].strength < 1 %>
-            <td><%= player[0].strength %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].strength %></td>
-          <% end %>
-          
-          <% if player[0].selfcontrol.nil? || player[1].selfcontrol.nil? || player[0].selfcontrol - player[1].selfcontrol < 1 %>
-            <td><%= player[0].selfcontrol %></td>
-          <% else %>
-            <td class="darkgreen"><%= player[0].selfcontrol %></td>
-          <% end %>
-          
-          <td><%= player[0].playertype %></td>
+          <td><%= @player_instances[index].quality %></td>
+          <td><%= @player_instances[index].potential %></td>
+          <td class="stadium"><%= player[1]["stadium"] %></td>
+          <td class="minutes"><%= average_minutes(player[1]) %></td>
 
-          <% if player[0].experience.nil? || player[1].experience.nil? || player[0].experience - player[1].experience < 1 %>
-            <td><%= player[0].experience %></td>
+          <% if player[1]["goalie"].nil? || player[0]["goalie"].nil? || player[1]["goalie"] - player[0]["goalie"] < 1 %>
+            <td><%= player[1]["goalie"] %></td>
           <% else %>
-            <td class="darkgreen"><%= player[0].experience %></td>
+            <td class="darkgreen"><%= player[1]["goalie"] %></td>
+          <% end %>
+
+          <% if player[1]["defense"].nil? || player[0]["defense"].nil? || player[1]["defense"] - player[0]["defense"] < 1 %>
+            <td><%= player[1]["defense"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["defense"] %></td>
           <% end %>
           
-          <td><%= calculate_ai(player[0]) %></td>
+          <% if player[1]["offense"].nil? || player[0]["offense"].nil? || player[1]["offense"] - player[0]["offense"] < 1 %>
+            <td><%= player[1]["offense"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["offense"] %></td>
+          <% end %>
+          
+          <% if player[1]["shooting"].nil? || player[0]["shooting"].nil? || player[1]["shooting"] - player[0]["shooting"] < 1 %>
+            <td><%= player[1]["shooting"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["shooting"] %></td>
+          <% end %>
+          
+          <% if player[1]["passing"].nil? || player[0]["passing"].nil? || player[1]["passing"] - player[0]["passing"] < 1 %>
+            <td><%= player[1]["passing"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["passing"] %></td>
+          <% end %>
+          
+          <% if player[1]["speed"].nil? || player[0]["speed"].nil? || player[1]["speed"] - player[0]["speed"] < 1 %>
+            <td><%= player[1]["speed"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["speed"] %></td>
+          <% end %>
+          
+          <% if player[1]["strength"].nil? || player[0]["strength"].nil? || player[1]["strength"] - player[0]["strength"] < 1 %>
+            <td><%= player[1]["strength"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["strength"] %></td>
+          <% end %>
+          
+          <% if player[1]["selfcontrol"].nil? || player[0]["selfcontrol"].nil? || player[1]["selfcontrol"] - player[0]["selfcontrol"] < 1 %>
+            <td><%= player[1]["selfcontrol"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["selfcontrol"] %></td>
+          <% end %>
+          
+          <td><%= player[1]["playertype"] %></td>
 
-          <td class="ai_diff"><%= player[0].ai - calculate_ai(player[0]) %></td>
+          <% if player[1]["experience"].nil? || player[0]["experience"].nil? || player[1]["experience"] - player[0]["experience"] < 1 %>
+            <td><%= player[1]["experience"] %></td>
+          <% else %>
+            <td class="darkgreen"><%= player[1]["experience"] %></td>
+          <% end %>
+          
+          <td><%= calculate_ai(player[1]) %></td>
 
-          <td class="games"><%= player[0].games %></td>
+          <td class="ai_diff"><%= player[1]["ai"] - calculate_ai(player[1]) %></td>
 
-          <td><%= player[0].minutes %></td>
+          <td class="games"><%= player[1]["games"] %></td>
+
+          <td><%= player[1]["minutes"] %></td>
         <% end %>
       </tr>
     <% end %>

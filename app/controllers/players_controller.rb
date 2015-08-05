@@ -2,34 +2,27 @@ class PlayersController < ApplicationController
   before_action :signed_in_user
 
   def show5960
-    @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=19').to_a
-    @distinct.delete_if do |player|
-      new_player = Player.find_by name: player["name"], age: 20
-      new_player.nil? ? false : true
-    end
-    @players = []
-    @distinct.each do |distinct|
-      @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
-    end
+    @player_instances = Player.where(team: "5960")
+    @players = prepare_tables(@player_instances)
   end
 
   def show6162
-    @connection = ActiveRecord::Base.connection
-    @distinct = @connection.exec_query('SELECT DISTINCT name FROM players WHERE age=17').to_a
-    @distinct.delete_if do |player|
-      new_player = Player.find_by name: player["name"], age: 18
-      new_player.nil? ? false : true
-    end
-    @players = []
-    @distinct.each do |distinct|
-      @players << Player.where("name = ?", distinct["name"]).limit(2).order("id DESC")
-    end
+    @player_instances = Player.where(team: "6162")
+    @players = prepare_tables(@player_instances)
+  end
+  
+  def showSenior
+    @player_instances = Player.where(team: "senior")
+    @players = prepare_tables(@player_instances)
   end
 
   def show
     @player = Player.find(params[:id])
-    @players = Player.order("id DESC").where("name = ?", @player.name)
+    @dates = []
+    @player.daily.keys.sort.each do |date|
+      @dates << date
+    end
+    @dates.reverse!
   end
 
   def destroy
@@ -81,6 +74,26 @@ class PlayersController < ApplicationController
         flash[:warning] = "You must be signed in to access that page."
         redirect_to root_url
       end
+    end
+    
+    def prepare_tables(player_instances)
+      players = []
+      player_instances.each do |instance|
+        keys = []
+        instance.daily.keys.sort.each do |key|
+          keys << key
+        end
+        dates = keys[-2..-1]
+        if dates.nil?
+          dates = keys
+        end
+        player = []
+        dates.each do |date|
+          player << instance.daily[date]
+        end
+        players << player
+      end
+      return players
     end
 
 end
