@@ -15,23 +15,23 @@ class UpdateJob
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
   @@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
-  @@ws19 = @@doc5960.worksheet_by_title('Players19')
+  @@ws20 = @@doc5960.worksheet_by_title('Players20')
   @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
-  @@ws17 = @@doc6162.worksheet_by_title('Players17')
+  @@ws18 = @@doc6162.worksheet_by_title('Players18')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 59')
-  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
+  @@wsNT = @@docNT.worksheet_by_title('Season 60')
+  @@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
-    update_team('speedysportwhiz', @@ws19, '5960')
-    update_team('speedysportwhiz', @@ws17, '6162')
+    update_team('speedysportwhiz', @@ws20, '5960')
+    update_team('speedysportwhiz', @@ws18, '6162')
     update_team('speedysportwhiz', @@wsNT, 'senior')
     update_ys('speedysportwhiz', 'live', false)
     update_ys('speedysportwhiz', 'live', true)
     login_to_HA('magicspeedo', 'live')
-    update_team('magicspeedo', @@ws17, '6162')
+    update_team('magicspeedo', @@ws18, '6162')
     update_team('magicspeedo', @@wsNT, 'senior')
     update_ys('magicspeedo', 'live', false)
     update_ys('magicspeedo', 'live', true)
@@ -41,13 +41,15 @@ class UpdateJob
     login_to_HA('magicspeedo', 'beta')
     update_ys('magicspeedo', 'beta', false)
     update_ys('magicspeedo', 'beta', true)
+    Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
 
   private
   
     def login_to_HA(mgr, version)
       # Login to HA
-      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}" })
+      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}",
+                                                    progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
       @@agent = Mechanize.new
       if version == "live"
         @@agent.get('http://www.hockeyarena.net/en/')
@@ -73,7 +75,7 @@ class UpdateJob
           (team == 'senior' && mgr == 'magicspeedo' && ws[a,29] != 'y'))
           @@player_number += 1
           string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string })
+          Pusher.trigger('players_channel', 'update', { message: string, progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
           begin
             @@agent = update_player(ws, team, a, @@agent, mgr)
           rescue Nokogiri::XML::XPath::SyntaxError => e
@@ -162,7 +164,7 @@ class UpdateJob
                        quality: ws[row,3+col],
                        potential: ws[row,4+col],
                        team: team,
-                       daily: { DateTime.now => { ai: ws[row,2+col].to_i,
+                       daily: { (DateTime.now.to_time - 4.hours).to_datetime => { ai: ws[row,2+col].to_i,
                                                   stadium: ws[row,5+col].to_i,
                                                   goalie: ws[row,7+col].to_i,
                                                   defense: ws[row,8+col].to_i,
@@ -178,7 +180,7 @@ class UpdateJob
                                                   minutes: ws[row,22+col].to_i } })
       else
         ai_hash = player_in_db["daily"]
-        ai_hash[DateTime.now] = { ai: ws[row,2+col].to_i,
+        ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = { ai: ws[row,2+col].to_i,
                                   stadium: ws[row,5+col].to_i,
                                   goalie: ws[row,7+col].to_i,
                                   defense: ws[row,8+col].to_i,
@@ -206,7 +208,8 @@ class UpdateJob
     
     def update_ys(mgr, version, draft)
       # Update youth school
-      Pusher.trigger('players_channel', 'update', { message: "Updating #{mgr} #{version} YS and draft", progress: 0 })
+      Pusher.trigger('players_channel', 'update', { message: "Updating #{mgr} #{version} YS and draft",
+                                                    progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
       ys_info = []
       player_info = []
       count = 0
@@ -264,14 +267,14 @@ class UpdateJob
                               quality: player[2],
                               potential: player[3],
                               talent: player[4],
-                              ai: { DateTime.now => player[5] },
+                              ai: { (DateTime.now.to_time - 4.hours).to_datetime => player[5] },
                               priority: player_priority,
                               manager: mgr,
                               version: version,
                               draft: draft)
         else
           ai_hash = player_in_db["ai"]
-          ai_hash[DateTime.now] = player[5]
+          ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = player[5]
           player_in_db.update(age: player[1],
                               quality: player[2],
                               potential: player[3],

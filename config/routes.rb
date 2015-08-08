@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   resources :users,        only: [:new,  :create, :update, :edit]
   resources :sessions,     only: [:new,  :create, :destroy]
-  resources :players,      only: [:show, :destroy]
+  resources :players,      only: [:show]
   resources :players do
     collection do
       delete 'destroy_multiple'
@@ -24,8 +24,6 @@ Rails.application.routes.draw do
   match '/speedyBetaYS',    to: 'youth_school#speedyBetaYS',    via: 'get'
   match '/speedyLiveDraft', to: 'youth_school#speedyLiveDraft', via: 'get'
   match '/speedyLiveYS',    to: 'youth_school#speedyLiveYS',    via: 'get'
-  # match '/get_NT_info',   to: 'players#get_NT_info', via: 'post'
-  # match '/login_HA',      to: 'players#login_HA',    via: 'get'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
