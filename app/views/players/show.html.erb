@@ -83,7 +83,6 @@
         <th>Games</th>
         <th>Min</th>
         <th>Date</th>
-        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -175,13 +174,10 @@
           <td><%= @player.daily[date]["games"] %></td>
           <td><%= @player.daily[date]["minutes"] %></td>
           <td><%= date.to_datetime.strftime("%m/%d/%Y %I:%M%p") %></td>
-          <td><%= check_box_tag 'player_ids[]', @player.id %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
-  <br>
-  <%= submit_tag "Delete", data: { confirm: "Are you sure you want to delete these instances of #{@player.name}?" }, class: "btn btn-md btn-primary" %>
 <% end %>
 <br>
-<%= button_to "Delete All", delete_all_path(:id => @player.id), data: { confirm: "Are you sure you want to delete all instances of #{@player.name}?" }, class: "btn btn-md btn-primary" %>
+<%= button_to "Delete Player", delete_all_path(:id => @player.id), data: { confirm: "Are you sure you want to delete #{@player.name}?" }, class: "btn btn-md btn-primary" %>

@@ -79,7 +79,7 @@
 
 <%= form_tag({controller: :players, action: :get_info}, method: "post", id: "progress-bar-form") do %>
   <div class="progress progress-striped active">
-    <div class="progress-bar progress-bar-info" id='progress-bar' style="width: 0%"></div>
+    <div class="progress-bar progress-bar-info" id='progress-bar'></div>
   </div>
   <p class="messages"></p>
 <% end %>
@@ -142,7 +142,11 @@
           <td class="games"><%= player[0]["games"] %></td>
           <td><%= player[0]["minutes"] %></td>
         <% else %>
-          <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %></td>
+          <% if @player_instances[index].team == "senior" %>
+            <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %> (<%= @player_instances[index].age %>)</td>
+          <% else %>
+            <td><%= link_to @player_instances[index].name, player_path(@player_instances[index]) %></td>
+          <% end %>
 
           <% if player[1]["ai"] - player[0]["ai"] < 1 %>
             <td><%= player[1]["ai"] %></td>
@@ -150,9 +154,6 @@
             <td class="darkgreen"><%= player[1]["ai"] %></td>
           <% end %>
 
-          <% if @player_instances[index].team == "senior" %>
-            <td><%= @player_instances[index].age %></td>
-          <% end %>
           <td><%= @player_instances[index].quality %></td>
           <td><%= @player_instances[index].potential %></td>
           <td class="stadium"><%= player[1]["stadium"] %></td>

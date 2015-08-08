@@ -25,30 +25,18 @@ class PlayersController < ApplicationController
     @dates.reverse!
   end
 
-  def destroy
-    num_instances = params[:player_ids].size
-    player = Player.where(id: params[:player_ids][0]).limit(1).order("id DESC")
-    player_name = player.first.name
-    player_age = player.first.age
-    Player.destroy_all(id: params[:player_ids])
-    flash[:success] = "#{num_instances} instances of #{player_name} deleted."
-    if player_age == 17 || player_age == 18
-      redirect_to players6162_path
-    else
-      redirect_to players5960_path
-    end
-  end
-
   def delete_all
     player = Player.find(params[:id])
     player_name = player.name
-    player_age = player.age
+    player_team = player.team
     Player.delete_all(["name = ?", player_name])
     flash[:success] = "All instances of #{player_name} deleted."
-    if player_age == 17 || player_age == 18
+    if player_team == "5960"
+      redirect_to players5960_path
+    elsif player_team == "6162"
       redirect_to players6162_path
     else
-      redirect_to players5960_path
+      redirect_to playersSenior_path
     end
   end
 
@@ -60,12 +48,6 @@ class PlayersController < ApplicationController
     UpdateJob.new.async.perform()
     redirect_to players5960_path
   end
-
-  # def get_NT_info
-  #   @players = []
-  #   NTJob.new.async.perform(params[:username], params[:password])
-  #   redirect_to players5556_path
-  # end
 
   private
 
