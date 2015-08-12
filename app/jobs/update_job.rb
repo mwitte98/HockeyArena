@@ -124,7 +124,7 @@ class UpdateJob
         ws[row,14+col] = strip_percent(player_info[21]) #sco
         ws[row,16+col] = strip_percent(player_info[25]) #exp
 
-        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'McDeedo Punch')
+        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'I WILL NOT RESIGN FREE AGENTS')
           ws[row,21+col] = player_info[34] #games
           ws[row,22+col] = player_info[36] #min
         else
