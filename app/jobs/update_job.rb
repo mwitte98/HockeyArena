@@ -14,18 +14,19 @@ class UpdateJob
     :issuer => ENV['google_issuer'],
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
-  @@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
-  @@ws20 = @@doc5960.worksheet_by_title('Players20')
+  #@@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
+  #@@ws20 = @@doc5960.worksheet_by_title('Players20')
   @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
   @@ws18 = @@doc6162.worksheet_by_title('Players18')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
   @@wsNT = @@docNT.worksheet_by_title('Season 60')
-  @@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
+  #@@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
+  @@total_players = @@ws18.num_rows + @@wsNT.num_rows - 2
   @@player_number = 0
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
-    update_team('speedysportwhiz', @@ws20, '5960')
+    #update_team('speedysportwhiz', @@ws20, '5960')
     update_team('speedysportwhiz', @@ws18, '6162')
     update_team('speedysportwhiz', @@wsNT, 'senior')
     update_ys('speedysportwhiz', 'live', false)
