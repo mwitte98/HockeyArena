@@ -109,45 +109,7 @@ class UpdateJob
       col = team == "senior" ? 1 : 0
       id = ws[row,28]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
-<<<<<<< HEAD
       if agent.page.content.include? "Player does not exist or has retired !"
-=======
-
-      player_info = []
-      agent.page.search('.q1, .q').each do |info|
-        player_info << info.text
-      end
-
-      if team == "senior"
-        ws[row,2] = player_info[2] #age
-      end
-      ws[row,2+col] = player_info[0] #ai
-
-      if player_info.size > 35 #player is scouted
-        ws[row,7+col] = strip_percent(player_info[16]) #goa
-        ws[row,8+col] = strip_percent(player_info[18]) #def
-        ws[row,9+col] = strip_percent(player_info[20]) #off
-        ws[row,10+col] = strip_percent(player_info[22]) #shot
-        ws[row,11+col] = strip_percent(player_info[24]) #pass
-        ws[row,12+col] = strip_percent(player_info[17]) #spd
-        ws[row,13+col] = strip_percent(player_info[19]) #str
-        ws[row,14+col] = strip_percent(player_info[21]) #sco
-        ws[row,16+col] = strip_percent(player_info[25]) #exp
-
-        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'I WILL NOT RESIGN FREE AGENTS')
-          ws[row,21+col] = player_info[34] #games
-          ws[row,22+col] = player_info[36] #min
-        else
-          ws[row,21+col] = player_info[31] #games
-          ws[row,22+col] = player_info[33] #min
-        end
-      else #player isn't scouted
-        ws[row,21+col] = player_info[19] #games
-        ws[row,22+col] = player_info[21] #min
-      end
-
-      if agent.page.link_with(:text => player_info[5]).nil?
->>>>>>> f1e0fe1a17daaab3e52373ee2e910c59c14815ca
         for a in 2..27
           ws[row,a] = "DELETE"
         end
