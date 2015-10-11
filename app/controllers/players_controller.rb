@@ -30,7 +30,7 @@ class PlayersController < ApplicationController
     player_name = player.name
     player_team = player.team
     Player.delete_all(["name = ?", player_name])
-    flash[:success] = "All instances of #{player_name} deleted."
+    flash[:success] = "#{player_name} deleted."
     if player_team == "5960"
       redirect_to players5960_path
     elsif player_team == "6162"
