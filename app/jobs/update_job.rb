@@ -64,6 +64,13 @@ class UpdateJob
         form.password = ENV['beta_password']
       end
       form.submit
+      if @@agent.page.link_with(:text => "Mail").nil?
+        puts "*****Login to HA failed for #{mgr} #{version}. Attempting to try again.*****"
+        @@agent.page.search('#page').each do |info|
+          puts info.text
+        end
+        login_to_HA(mgr, version)
+      end
     end
   
     def update_team(mgr, ws, team)
@@ -102,99 +109,98 @@ class UpdateJob
       col = team == "senior" ? 1 : 0
       id = ws[row,28]
       agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
-
-      player_info = []
-      agent.page.search('.q1, .q').each do |info|
-        player_info << info.text
-      end
-
-      if team == "senior"
-        ws[row,2] = player_info[2] #age
-      end
-      ws[row,2+col] = player_info[0] #ai
-
-      if player_info.size > 35 #player is scouted
-        ws[row,7+col] = strip_percent(player_info[16]) #goa
-        ws[row,8+col] = strip_percent(player_info[18]) #def
-        ws[row,9+col] = strip_percent(player_info[20]) #off
-        ws[row,10+col] = strip_percent(player_info[22]) #shot
-        ws[row,11+col] = strip_percent(player_info[24]) #pass
-        ws[row,12+col] = strip_percent(player_info[17]) #spd
-        ws[row,13+col] = strip_percent(player_info[19]) #str
-        ws[row,14+col] = strip_percent(player_info[21]) #sco
-        ws[row,16+col] = strip_percent(player_info[25]) #exp
-
-        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'McDeedo Punch')
-          ws[row,21+col] = player_info[34] #games
-          ws[row,22+col] = player_info[36] #min
-        else
-          ws[row,21+col] = player_info[31] #games
-          ws[row,22+col] = player_info[33] #min
-        end
-      else #player isn't scouted
-        ws[row,21+col] = player_info[19] #games
-        ws[row,22+col] = player_info[21] #min
-      end
-
-      if agent.page.link_with(:text => player_info[5]).nil?
+      if agent.page.content.include? "Player does not exist or has retired !"
         for a in 2..27
           ws[row,a] = "DELETE"
         end
       else
+        player_info = []
+        agent.page.search('.q1, .q').each do |info|
+          player_info << info.text
+        end
+  
+        if team == "senior"
+          ws[row,2] = player_info[2] #age
+        end
+        ws[row,2+col] = player_info[0] #ai
+  
+        if player_info.size > 35 #player is scouted
+          ws[row,7+col] = strip_percent(player_info[16]) #goa
+          ws[row,8+col] = strip_percent(player_info[18]) #def
+          ws[row,9+col] = strip_percent(player_info[20]) #off
+          ws[row,10+col] = strip_percent(player_info[22]) #shot
+          ws[row,11+col] = strip_percent(player_info[24]) #pass
+          ws[row,12+col] = strip_percent(player_info[17]) #spd
+          ws[row,13+col] = strip_percent(player_info[19]) #str
+          ws[row,14+col] = strip_percent(player_info[21]) #sco
+          ws[row,16+col] = strip_percent(player_info[25]) #exp
+  
+          if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'I WILL NOT RESIGN FREE AGENTS')
+            ws[row,21+col] = player_info[34] #games
+            ws[row,22+col] = player_info[36] #min
+          else
+            ws[row,21+col] = player_info[31] #games
+            ws[row,22+col] = player_info[33] #min
+          end
+        else #player isn't scouted
+          ws[row,21+col] = player_info[19] #games
+          ws[row,22+col] = player_info[21] #min
+        end
+  
         agent.page.link_with(:text => player_info[5]).click
-      end
-      team_id = agent.page.uri.to_s[77..-1]
-      agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
-      stadium_info = []
-      agent.page.search('.sr1 .yspscores').each do |info|
-        stadium_info << info.text.strip
-      end
-
-      if stadium_info[3][0] == '0' #stadium-training
-        ws[row,5+col] = 0
-      else
-        ws[row,5+col] = stadium_info[3][0..2]
-      end
-
-      player_in_db = Player.find_by({ name: ws[row,1], team: team })
-      if player_in_db.nil?
-        Player.create!(playerid: ws[row,28],
-                       name: ws[row,1],
-                       age: player_info[2],
-                       quality: ws[row,3+col],
-                       potential: ws[row,4+col],
-                       team: team,
-                       daily: { (DateTime.now.to_time - 4.hours).to_datetime => { ai: ws[row,2+col].to_i,
-                                                  stadium: ws[row,5+col].to_i,
-                                                  goalie: ws[row,7+col].to_i,
-                                                  defense: ws[row,8+col].to_i,
-                                                  offense: ws[row,9+col].to_i,
-                                                  shooting: ws[row,10+col].to_i,
-                                                  passing: ws[row,11+col].to_i,
-                                                  speed: ws[row,12+col].to_i,
-                                                  strength: ws[row,13+col].to_i,
-                                                  selfcontrol: ws[row,14+col].to_i,
-                                                  playertype: ws[row,15+col],
-                                                  experience: ws[row,16+col].to_i,
-                                                  games: ws[row,21+col].to_i,
-                                                  minutes: ws[row,22+col].to_i } })
-      else
-        ai_hash = player_in_db["daily"]
-        ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = { ai: ws[row,2+col].to_i,
-                                  stadium: ws[row,5+col].to_i,
-                                  goalie: ws[row,7+col].to_i,
-                                  defense: ws[row,8+col].to_i,
-                                  offense: ws[row,9+col].to_i,
-                                  shooting: ws[row,10+col].to_i,
-                                  passing: ws[row,11+col].to_i,
-                                  speed: ws[row,12+col].to_i,
-                                  strength: ws[row,13+col].to_i,
-                                  selfcontrol: ws[row,14+col].to_i,
-                                  playertype: ws[row,15+col],
-                                  experience: ws[row,16+col].to_i,
-                                  games: ws[row,21+col].to_i,
-                                  minutes: ws[row,22+col].to_i }
-        player_in_db.update(age: player_info[2], daily: ai_hash)
+        team_id = agent.page.uri.to_s[77..-1]
+        agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
+        stadium_info = []
+        agent.page.search('.sr1 .yspscores').each do |info|
+          stadium_info << info.text.strip
+        end
+  
+        if stadium_info[3][0] == '0' #stadium-training
+          ws[row,5+col] = 0
+        else
+          ws[row,5+col] = stadium_info[3][0..2]
+        end
+        
+        player_in_db = Player.find_by({ name: ws[row,1], team: team })
+        if player_in_db.nil?
+          Player.create!(playerid: ws[row,28],
+                        name: ws[row,1],
+                        age: player_info[2],
+                        quality: ws[row,3+col],
+                        potential: ws[row,4+col],
+                        team: team,
+                        daily: { (DateTime.now.to_time - 4.hours).to_datetime => { ai: ws[row,2+col].to_i,
+                                                    stadium: ws[row,5+col].to_i,
+                                                    goalie: ws[row,7+col].to_i,
+                                                    defense: ws[row,8+col].to_i,
+                                                    offense: ws[row,9+col].to_i,
+                                                    shooting: ws[row,10+col].to_i,
+                                                    passing: ws[row,11+col].to_i,
+                                                    speed: ws[row,12+col].to_i,
+                                                    strength: ws[row,13+col].to_i,
+                                                    selfcontrol: ws[row,14+col].to_i,
+                                                    playertype: ws[row,15+col],
+                                                    experience: ws[row,16+col].to_i,
+                                                    games: ws[row,21+col].to_i,
+                                                    minutes: ws[row,22+col].to_i } })
+        else
+          ai_hash = player_in_db["daily"]
+          ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = { ai: ws[row,2+col].to_i,
+                                    stadium: ws[row,5+col].to_i,
+                                    goalie: ws[row,7+col].to_i,
+                                    defense: ws[row,8+col].to_i,
+                                    offense: ws[row,9+col].to_i,
+                                    shooting: ws[row,10+col].to_i,
+                                    passing: ws[row,11+col].to_i,
+                                    speed: ws[row,12+col].to_i,
+                                    strength: ws[row,13+col].to_i,
+                                    selfcontrol: ws[row,14+col].to_i,
+                                    playertype: ws[row,15+col],
+                                    experience: ws[row,16+col].to_i,
+                                    games: ws[row,21+col].to_i,
+                                    minutes: ws[row,22+col].to_i }
+          player_in_db.update(age: player_info[2], daily: ai_hash)
+        end
       end
         
       begin
