@@ -14,25 +14,24 @@ class UpdateJob
     :issuer => ENV['google_issuer'],
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
-  #@@doc5960 = @@session.spreadsheet_by_key(ENV['5960_key'])
-  #@@ws20 = @@doc5960.worksheet_by_title('Players20')
   @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
-  @@ws18 = @@doc6162.worksheet_by_title('Players18')
+  @@ws19 = @@doc6162.worksheet_by_title('Players19')
+  @@doc6364 = @@session.spreadsheet_by_key(ENV['6364_key'])
+  @@ws17 = @@doc6364.worksheet_by_title('Players17')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 60')
-  #@@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
-  @@total_players = @@ws18.num_rows + @@wsNT.num_rows - 2
+  @@wsNT = @@docNT.worksheet_by_title('Season 61')
+  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
-    #update_team('speedysportwhiz', @@ws20, '5960')
-    update_team('speedysportwhiz', @@ws18, '6162')
+    update_team('speedysportwhiz', @@ws19, '6162')
+    update_team('speedysportwhiz', @@ws17, '6364')
     update_team('speedysportwhiz', @@wsNT, 'senior')
     update_ys('speedysportwhiz', 'live', false)
     update_ys('speedysportwhiz', 'live', true)
     login_to_HA('magicspeedo', 'live')
-    update_team('magicspeedo', @@ws18, '6162')
+    update_team('magicspeedo', @@ws19, '6162')
     update_team('magicspeedo', @@wsNT, 'senior')
     update_ys('magicspeedo', 'live', false)
     update_ys('magicspeedo', 'live', true)
@@ -54,17 +53,19 @@ class UpdateJob
       @@agent = Mechanize.new
       if version == "live"
         @@agent.get('http://www.hockeyarena.net/en/')
+        form = @@agent.page.forms.first
+        form.nick = mgr
+        form.password = ENV['HA_password']
+        form.submit
+        @@agent.get('http://www.hockeyarena.net/en/index.php?smenu=mhraci')
       else
         @@agent.get('http://beta.hockeyarena.net/en/')
-      end
-      form = @@agent.page.forms.first
-      form.nick = mgr
-      if version == "live"
-        form.password = ENV['HA_password']
-      else
+        form = @@agent.page.forms.first
+        form.nick = mgr
         form.password = ENV['beta_password']
+        form.submit
+        @@agent.get('http://beta.hockeyarena.net/en/index.php?smenu=mhraci')
       end
-      form.submit
       if @@agent.page.link_with(:text => "Mail").nil?
         puts "*****Login to HA failed for #{mgr} #{version}. Attempting to try again.*****"
         @@agent.page.search('#page').each do |info|
