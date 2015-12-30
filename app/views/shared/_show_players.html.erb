@@ -4,7 +4,7 @@
   <script src="https://d3dy5gmtp8yhk7.cloudfront.net/2.2/pusher.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      var pusher = new Pusher('<%=escape_javascript ENV['pusher_key'] %>', { encrypted: true });
+      var pusher = new Pusher("<%=escape_javascript ENV['pusher_key'] %>", { encrypted: true });
       var channel = pusher.subscribe('players_channel');
       channel.bind('update', function(data) {
         var messageBox = $('#progress-bar-form').children('.messages')
@@ -85,7 +85,7 @@
 <% end %>
 
 <% if @players.size > 0 %>
-  <table class="players">
+  <table id="allPlayers">
     <thead>
       <tr>
         <% if @player_instances.first.team == "senior" %>

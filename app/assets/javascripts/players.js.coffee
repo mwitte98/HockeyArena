@@ -3,8 +3,30 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 jQuery ->
-  $('table.players').dataTable( {
+  $('#allPlayers').dataTable( {
     "aLengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
     "iDisplayLength": -1,
-    "order": [[1, 'desc']]
+    "order": [[1, 'desc']],
+    "aoColumns": [
+        null,
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        null,
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        null,
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+        { "asSorting": [ "desc", "asc" ] },
+    ]
   } );
