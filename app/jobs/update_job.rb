@@ -3,7 +3,7 @@ class UpdateJob
   require 'active_support/core_ext'
   require 'google/api_client'
 
-  client = Google::APIClient.new
+  client = Google::APIClient.new({application_name: 'HockeyArena', application_version: '0.0.0.0'})
   key = OpenSSL::PKey::RSA.new ENV['google_private_key'], ENV['google_secret']
   client.authorization = Signet::OAuth2::Client.new(
     :token_credential_uri => 'https://accounts.google.com/o/oauth2/token',
@@ -15,32 +15,46 @@ class UpdateJob
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
   @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
-  @@ws19 = @@doc6162.worksheet_by_title('Players19')
+  @@ws20 = @@doc6162.worksheet_by_title('Players20')
   @@doc6364 = @@session.spreadsheet_by_key(ENV['6364_key'])
-  @@ws17 = @@doc6364.worksheet_by_title('Players17')
+  @@ws18 = @@doc6364.worksheet_by_title('Players18')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 61')
-  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
+  @@wsNT = @@docNT.worksheet_by_title('Season 62')
+  @@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
+  @@login_attempt = 1
+  @@goodToGo = false
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
-    update_team('speedysportwhiz', @@ws19, '6162')
-    update_team('speedysportwhiz', @@ws17, '6364')
-    update_team('speedysportwhiz', @@wsNT, 'senior')
-    update_ys('speedysportwhiz', 'live', false)
-    update_ys('speedysportwhiz', 'live', true)
+    if @@goodToGo
+      update_team('speedysportwhiz', @@ws20, '6162')
+      update_team('speedysportwhiz', @@ws18, '6364')
+      update_team('speedysportwhiz', @@wsNT, 'senior')
+      update_ys('speedysportwhiz', 'live', false)
+      update_ys('speedysportwhiz', 'live', true)
+    end
+    
     login_to_HA('magicspeedo', 'live')
-    update_team('magicspeedo', @@ws19, '6162')
-    update_team('magicspeedo', @@wsNT, 'senior')
-    update_ys('magicspeedo', 'live', false)
-    update_ys('magicspeedo', 'live', true)
+    if @@goodToGo
+      update_team('magicspeedo', @@ws20, '6162')
+      update_team('magicspeedo', @@wsNT, 'senior')
+      update_ys('magicspeedo', 'live', false)
+      update_ys('magicspeedo', 'live', true)
+    end
+    
     login_to_HA('speedysportwhiz', 'beta')
-    update_ys('speedysportwhiz', 'beta', false)
-    update_ys('speedysportwhiz', 'beta', true)
+    if @@goodToGo
+      update_ys('speedysportwhiz', 'beta', false)
+      update_ys('speedysportwhiz', 'beta', true)
+    end
+    
     login_to_HA('magicspeedo', 'beta')
-    update_ys('magicspeedo', 'beta', false)
-    update_ys('magicspeedo', 'beta', true)
+    if @@goodToGo
+      update_ys('magicspeedo', 'beta', false)
+      update_ys('magicspeedo', 'beta', true)
+    end
+    
     Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
 
@@ -50,6 +64,8 @@ class UpdateJob
       # Login to HA
       Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}",
                                                     progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
+      @@login_attempt = 1
+      @@goodToGo = false
       @@agent = Mechanize.new
       if version == "live"
         @@agent.get('http://www.hockeyarena.net/en/')
@@ -57,21 +73,25 @@ class UpdateJob
         form.nick = mgr
         form.password = ENV['HA_password']
         form.submit
-        @@agent.get('http://www.hockeyarena.net/en/index.php?smenu=mhraci')
       else
         @@agent.get('http://beta.hockeyarena.net/en/')
         form = @@agent.page.forms.first
         form.nick = mgr
         form.password = ENV['beta_password']
         form.submit
-        @@agent.get('http://beta.hockeyarena.net/en/index.php?smenu=mhraci')
       end
-      if @@agent.page.link_with(:text => "Mail").nil?
-        puts "*****Login to HA failed for #{mgr} #{version}. Attempting to try again.*****"
+      sleep 1
+      if @@agent.page.content.include?("Logout")
+        @@goodToGo = true
+      else
+        puts "*****Login #{@@login_attempt} to HA failed for #{mgr} #{version}. Attempting to try again.*****"
         @@agent.page.search('#page').each do |info|
           puts info.text
         end
-        login_to_HA(mgr, version)
+        @@login_attempt += 1
+        if @@login_attempt <= 5
+          login_to_HA(mgr, version)
+        end
       end
     end
   
@@ -171,7 +191,7 @@ class UpdateJob
                         quality: ws[row,3+col],
                         potential: ws[row,4+col],
                         team: team,
-                        daily: { (DateTime.now.to_time - 4.hours).to_datetime => { ai: ws[row,2+col].to_i,
+                        daily: { DateTime.now.in_time_zone('Eastern Time (US & Canada)') => { ai: ws[row,2+col].to_i,
                                                     stadium: ws[row,5+col].to_i,
                                                     goalie: ws[row,7+col].to_i,
                                                     defense: ws[row,8+col].to_i,
@@ -187,7 +207,7 @@ class UpdateJob
                                                     minutes: ws[row,22+col].to_i } })
         else
           ai_hash = player_in_db["daily"]
-          ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = { ai: ws[row,2+col].to_i,
+          ai_hash[DateTime.now.in_time_zone('Eastern Time (US & Canada)')] = { ai: ws[row,2+col].to_i,
                                     stadium: ws[row,5+col].to_i,
                                     goalie: ws[row,7+col].to_i,
                                     defense: ws[row,8+col].to_i,
@@ -201,7 +221,7 @@ class UpdateJob
                                     experience: ws[row,16+col].to_i,
                                     games: ws[row,21+col].to_i,
                                     minutes: ws[row,22+col].to_i }
-          player_in_db.update(age: player_info[2], daily: ai_hash)
+          player_in_db.update(age: player_info[2], quality: ws[row,3+col], potential: ws[row,4+col], daily: ai_hash)
         end
       end
         
@@ -275,14 +295,14 @@ class UpdateJob
                               quality: player[2],
                               potential: player[3],
                               talent: player[4],
-                              ai: { (DateTime.now.to_time - 4.hours).to_datetime => player[5] },
+                              ai: { DateTime.now.in_time_zone('Eastern Time (US & Canada)') => player[5] },
                               priority: player_priority,
                               manager: mgr,
                               version: version,
                               draft: draft)
         else
           ai_hash = player_in_db["ai"]
-          ai_hash[(DateTime.now.to_time - 4.hours).to_datetime] = player[5]
+          ai_hash[DateTime.now.in_time_zone('Eastern Time (US & Canada)')] = player[5]
           player_in_db.update(age: player[1],
                               quality: player[2],
                               potential: player[3],
