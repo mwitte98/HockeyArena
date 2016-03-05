@@ -14,13 +14,13 @@ class UpdateJob
     :issuer => ENV['google_issuer'],
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
-  @@doc6162 = @@session.spreadsheet_by_key(ENV['6162_key'])
-  @@ws20 = @@doc6162.worksheet_by_title('Players20')
   @@doc6364 = @@session.spreadsheet_by_key(ENV['6364_key'])
-  @@ws18 = @@doc6364.worksheet_by_title('Players18')
+  @@ws19 = @@doc6364.worksheet_by_title('Players19')
+  @@doc6566 = @@session.spreadsheet_by_key(ENV['6566_key'])
+  @@ws17 = @@doc6566.worksheet_by_title('Players17')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 62')
-  @@total_players = @@ws20.num_rows + @@ws18.num_rows + @@wsNT.num_rows - 3
+  @@wsNT = @@docNT.worksheet_by_title('Season 63')
+  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
   @@player_number = 0
   @@login_attempt = 1
   @@goodToGo = false
@@ -28,8 +28,8 @@ class UpdateJob
   def perform
     login_to_HA('speedysportwhiz', 'live')
     if @@goodToGo
-      update_team('speedysportwhiz', @@ws20, '6162')
-      update_team('speedysportwhiz', @@ws18, '6364')
+      update_team('speedysportwhiz', @@ws19, '6364')
+      update_team('speedysportwhiz', @@ws17, '6566')
       update_team('speedysportwhiz', @@wsNT, 'senior')
       update_ys('speedysportwhiz', 'live', false)
       update_ys('speedysportwhiz', 'live', true)
@@ -37,7 +37,7 @@ class UpdateJob
     
     login_to_HA('magicspeedo', 'live')
     if @@goodToGo
-      update_team('magicspeedo', @@ws20, '6162')
+      update_team('magicspeedo', @@ws17, '6566')
       update_team('magicspeedo', @@wsNT, 'senior')
       update_ys('magicspeedo', 'live', false)
       update_ys('magicspeedo', 'live', true)
@@ -89,7 +89,7 @@ class UpdateJob
           puts info.text
         end
         @@login_attempt += 1
-        if @@login_attempt <= 5
+        if @@login_attempt <= 2
           login_to_HA(mgr, version)
         end
       end

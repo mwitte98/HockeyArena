@@ -1,13 +1,13 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  def show6162
-    @player_instances = Player.where(team: "6162")
+  def show6364
+    @player_instances = Player.where(team: "6364")
     @players = prepare_tables(@player_instances)
   end
   
-  def show6364
-    @player_instances = Player.where(team: "6364")
+  def show6566
+    @player_instances = Player.where(team: "6566")
     @players = prepare_tables(@player_instances)
   end
   
@@ -31,10 +31,10 @@ class PlayersController < ApplicationController
     player_team = player.team
     Player.delete_all(["name = ?", player_name])
     flash[:success] = "#{player_name} deleted."
-    if player_team == "6162"
-      redirect_to players6162_path
-    elsif player_team == "6364"
+    if player_team == "6364"
       redirect_to players6364_path
+    elsif player_team == "6566"
+      redirect_to players6566_path
     else
       redirect_to playersSenior_path
     end
@@ -46,7 +46,7 @@ class PlayersController < ApplicationController
 
   def get_info
     UpdateJob.new.async.perform()
-    redirect_to players6162_path
+    redirect_to players6364_path
   end
 
   private
