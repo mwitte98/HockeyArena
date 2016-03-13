@@ -4,7 +4,6 @@ gem 'rails', '4.2.5'
 
 gem 'bcrypt', '~> 3.1.10'
 gem 'bootstrap-sass', '~> 3.3.6'
-gem 'bootstrap-will_paginate', '~> 0.0.10'
 gem 'coffee-rails', '~> 4.1.0'
 gem 'google_drive', '~> 1.0.5'
 gem 'jquery-datatables-rails', '~> 3.3.0'
@@ -20,7 +19,6 @@ gem 'sprockets', '= 2.11.0'
 gem 'sprockets-rails', :require => 'sprockets/railtie'
 gem 'sucker_punch'
 gem 'uglifier', '~> 2.7.1'
-gem 'will_paginate', '~> 3.0.7'
 
 group :doc do
   gem 'sdoc', '0.4.1', require: false

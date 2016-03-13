@@ -49,8 +49,6 @@ GEM
     bootstrap-sass (3.3.6)
       autoprefixer-rails (>= 5.2.1)
       sass (>= 3.3.4)
-    bootstrap-will_paginate (0.0.10)
-      will_paginate
     builder (3.2.2)
     celluloid (0.17.2)
       celluloid-essentials
@@ -257,7 +255,6 @@ GEM
       rack
       raindrops (~> 0.7)
     webrobots (0.1.1)
-    will_paginate (3.0.7)
 
 PLATFORMS
   ruby
@@ -265,7 +262,6 @@ PLATFORMS
 DEPENDENCIES
   bcrypt (~> 3.1.10)
   bootstrap-sass (~> 3.3.6)
-  bootstrap-will_paginate (~> 0.0.10)
   coffee-rails (~> 4.1.0)
   google_drive (~> 1.0.5)
   jquery-datatables-rails (~> 3.3.0)
@@ -285,7 +281,6 @@ DEPENDENCIES
   sucker_punch
   uglifier (~> 2.7.1)
   unicorn
-  will_paginate (~> 3.0.7)
 
 BUNDLED WITH
    1.10.4
