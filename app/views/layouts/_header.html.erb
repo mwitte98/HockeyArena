@@ -1,7 +1,16 @@
-<header class="navbar navbar-fixed-top navbar-inverse">
+<header class="navbar navbar-default navbar-inverse">
   <div class="container">
-    <%= link_to "USA U20", root_path, id: "logo" %>
-    <nav>
+    <div class="navbar-header">
+      <%= link_to "USA U20", root_path, id: "logo" %>
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
         <li><%= link_to "Home", root_path %></li>
         <% if signed_in? %>
@@ -38,6 +47,6 @@
           <li><%= link_to "Sign in", signin_path %></li>
         <% end %>
       </ul>
-    </nav>
+    </div>
   </div>
 </header>
