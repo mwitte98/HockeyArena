@@ -15,21 +15,19 @@ class UpdateJob
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
   @@doc6364 = @@session.spreadsheet_by_key(ENV['6364_key'])
-  @@ws19 = @@doc6364.worksheet_by_title('Players19')
+  @@ws20 = @@doc6364.worksheet_by_title('Players20')
   @@doc6566 = @@session.spreadsheet_by_key(ENV['6566_key'])
-  @@ws17 = @@doc6566.worksheet_by_title('Players17')
+  @@ws18 = @@doc6566.worksheet_by_title('Players18')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 63')
-  @@total_players = @@ws19.num_rows + @@ws17.num_rows + @@wsNT.num_rows - 3
-  @@player_number = 0
+  @@wsNT = @@docNT.worksheet_by_title('Season 64')
   @@login_attempt = 1
   @@goodToGo = false
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
     if @@goodToGo
-      update_team('speedysportwhiz', @@ws19, '6364')
-      update_team('speedysportwhiz', @@ws17, '6566')
+      update_team('speedysportwhiz', @@ws20, '6364')
+      update_team('speedysportwhiz', @@ws18, '6566')
       update_team('speedysportwhiz', @@wsNT, 'senior')
       update_ys('speedysportwhiz', 'live', false)
       update_ys('speedysportwhiz', 'live', true)
@@ -37,7 +35,7 @@ class UpdateJob
     
     login_to_HA('magicspeedo', 'live')
     if @@goodToGo
-      update_team('magicspeedo', @@ws17, '6566')
+      update_team('magicspeedo', @@ws18, '6566')
       update_team('magicspeedo', @@wsNT, 'senior')
       update_ys('magicspeedo', 'live', false)
       update_ys('magicspeedo', 'live', true)
@@ -54,16 +52,12 @@ class UpdateJob
       update_ys('magicspeedo', 'beta', false)
       update_ys('magicspeedo', 'beta', true)
     end
-    
-    Pusher.trigger('players_channel', 'update', { message: "", progress: 0 })
   end
 
   private
   
     def login_to_HA(mgr, version)
       # Login to HA
-      Pusher.trigger('players_channel', 'update', { message: "Logging into #{version} Hockey Arena as #{mgr}",
-                                                    progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
       @@login_attempt = 1
       @@goodToGo = false
       @@agent = Mechanize.new
@@ -102,13 +96,9 @@ class UpdateJob
           (team != 'senior' && mgr == 'magicspeedo' && ws[a,29] == 'y') ||
           (team == 'senior' && mgr == 'speedysportwhiz' && ws[a,29] == 'y') ||
           (team == 'senior' && mgr == 'magicspeedo' && ws[a,29] != 'y'))
-          @@player_number += 1
-          string = "Updating #{ws[a,1]} (#{@@player_number} of #{@@total_players})"
-          Pusher.trigger('players_channel', 'update', { message: string, progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
           begin
             @@agent = update_player(ws, team, a, @@agent, mgr)
           rescue Nokogiri::XML::XPath::SyntaxError => e
-            @@player_number -= 1
             redo
           end
         end
@@ -249,8 +239,6 @@ class UpdateJob
     
     def update_ys(mgr, version, draft)
       # Update youth school
-      Pusher.trigger('players_channel', 'update', { message: "Updating #{mgr} #{version} YS and draft",
-                                                    progress: (@@player_number.to_f/@@total_players.to_f*100.0).to_i })
       ys_info = []
       player_info = []
       count = 0

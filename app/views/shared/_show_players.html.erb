@@ -1,18 +1,8 @@
 <% provide(:title, 'Players') %>
 
 <head>
-  <script src="https://d3dy5gmtp8yhk7.cloudfront.net/2.2/pusher.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      var pusher = new Pusher("<%=escape_javascript ENV['pusher_key'] %>", { encrypted: true });
-      var channel = pusher.subscribe('players_channel');
-      channel.bind('update', function(data) {
-        var messageBox = $('#progress-bar-form').children('.messages')
-        var progressBar = $('#progress-bar')
-
-        progressBar.width(data.progress+"%")
-        messageBox.html(data.message)
-      });
       $('.stadium').each(function() {
         var value = $(this).text();
         if (value >= 240) {
@@ -76,13 +66,6 @@
     </table> -->
   </div>
 </div>
-
-<%= form_tag({controller: :players, action: :get_info}, method: "post", id: "progress-bar-form") do %>
-  <div class="progress progress-striped active">
-    <div class="progress-bar progress-bar-info" id='progress-bar'></div>
-  </div>
-  <p class="messages"></p>
-<% end %>
 
 <% if @players.size > 0 %>
   <table id="allPlayers">
