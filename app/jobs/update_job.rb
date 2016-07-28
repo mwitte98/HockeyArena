@@ -14,20 +14,20 @@ class UpdateJob
     :issuer => ENV['google_issuer'],
     :signing_key => key)
   @@session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!["access_token"])
-  @@doc6364 = @@session.spreadsheet_by_key(ENV['6364_key'])
-  @@ws20 = @@doc6364.worksheet_by_title('Players20')
   @@doc6566 = @@session.spreadsheet_by_key(ENV['6566_key'])
-  @@ws18 = @@doc6566.worksheet_by_title('Players18')
+  @@ws19 = @@doc6566.worksheet_by_title('Players19')
+  @@doc6768 = @@session.spreadsheet_by_key(ENV['6768_key'])
+  @@ws17 = @@doc6768.worksheet_by_title('Players17')
   @@docNT = @@session.spreadsheet_by_key(ENV['NT_key'])
-  @@wsNT = @@docNT.worksheet_by_title('Season 64')
-  @@login_attempt = 1
+  @@wsNT = @@docNT.worksheet_by_title('Season 65')
+  @login_attempt = 1
   @@goodToGo = false
 
   def perform
     login_to_HA('speedysportwhiz', 'live')
     if @@goodToGo
-      update_team('speedysportwhiz', @@ws20, '6364')
-      update_team('speedysportwhiz', @@ws18, '6566')
+      update_team('speedysportwhiz', @@ws19, '6566')
+      update_team('speedysportwhiz', @@ws17, '6768')
       update_team('speedysportwhiz', @@wsNT, 'senior')
       update_ys('speedysportwhiz', 'live', false)
       update_ys('speedysportwhiz', 'live', true)
@@ -35,7 +35,7 @@ class UpdateJob
     
     login_to_HA('magicspeedo', 'live')
     if @@goodToGo
-      update_team('magicspeedo', @@ws18, '6566')
+      update_team('magicspeedo', @@ws19, '6768')
       update_team('magicspeedo', @@wsNT, 'senior')
       update_ys('magicspeedo', 'live', false)
       update_ys('magicspeedo', 'live', true)
@@ -58,7 +58,7 @@ class UpdateJob
   
     def login_to_HA(mgr, version)
       # Login to HA
-      @@login_attempt = 1
+      @login_attempt = 1
       @@goodToGo = false
       @@agent = Mechanize.new
       if version == "live"
@@ -75,15 +75,15 @@ class UpdateJob
         form.submit
       end
       sleep 1
-      if @@agent.page.content.include?("Logout")
+      unless @@agent.page.content.include?("Continue")
         @@goodToGo = true
       else
-        puts "*****Login #{@@login_attempt} to HA failed for #{mgr} #{version}. Attempting to try again.*****"
+        puts "*****Login #{@login_attempt} to HA failed for #{mgr} #{version}. Attempting to try again.*****"
         @@agent.page.search('#page').each do |info|
           puts info.text
         end
-        @@login_attempt += 1
-        if @@login_attempt <= 2
+        @login_attempt += 1
+        if @login_attempt <= 2
           login_to_HA(mgr, version)
         end
       end
@@ -153,7 +153,7 @@ class UpdateJob
         ws[row,14+col] = strip_percent(player_info[21]) #sco
         ws[row,16+col] = strip_percent(player_info[25]) #exp
 
-        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'I WILL NOT RESIGN FREE AGENTS')
+        if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') || (mgr == 'magicspeedo' && player_info[5] == 'McDeedo Punch')
           ws[row,21+col] = player_info[34] #games
           ws[row,22+col] = player_info[36] #min
         else
