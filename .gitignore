@@ -12,12 +12,7 @@
 /db/*.sqlite3-journal
 
 # Ignore all logfiles and tempfiles.
-/log/*.log
-/tmp
-*.swp
-*~
-.project
+/log/*
+/tmp/*
 .DS_Store
-.idea
-.secret
-/config/heroku_env.rb
+.env

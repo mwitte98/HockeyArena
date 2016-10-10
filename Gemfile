@@ -15,7 +15,7 @@ gem 'pg', '~> 0.19.0'
 gem 'rubyXL', '~> 3.3.2'
 gem 'sass-rails', '~> 5.0.3'
 gem 'sprockets', '= 2.11.0'
-gem 'sprockets-rails', :require => 'sprockets/railtie'
+gem 'sprockets-rails', require: 'sprockets/railtie'
 gem 'sucker_punch', '~> 1.6.0'
 gem 'uglifier', '~> 2.7.1'
 

@@ -1,7 +1,7 @@
 # Load the rails application
 require File.expand_path('../application', __FILE__)
-#Load heroku vars from local file
-heroku_env = File.join(Rails.root, 'config', 'heroku_env.rb')
-load(heroku_env) if File.exists?(heroku_env)
+# Load environment vars from local file
+env = File.join(Rails.root, '.env')
+load(env) if File.exist?(env)
 # Initialize the rails application
 Rails.application.initialize!
