@@ -8,6 +8,7 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'db/schema.rb'
+    - 'config/unicorn.rb'
   TargetRubyVersion: 2.3
 
 Metrics/LineLength:
