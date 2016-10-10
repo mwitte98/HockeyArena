@@ -22,13 +22,20 @@ engines:
     enabled: true
 ratings:
   paths:
+  - config.ru
+  - Gemfile
   - Gemfile.lock
+  - Guardfile
+  - Procfile
+  - Rakefile
   - "**.erb"
   - "**.rb"
   - "**.css"
   - "**.coffee"
   - "**.js"
 exclude_paths:
-- config/
-- db/
-- vendor/
+- 'bin/**/*'
+- 'client/**/*'
+- 'tmp/**/*'
+- 'vendor/**/*'
+- 'db/schema.rb'
