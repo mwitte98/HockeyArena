@@ -3,26 +3,28 @@ class UpdateJob
   require 'active_support/core_ext'
   require 'google/api_client'
 
-  client = Google::APIClient.new(application_name: 'HockeyArena', application_version: '0.0.0.0')
-  key = OpenSSL::PKey::RSA.new ENV['google_private_key'], ENV['google_secret']
-  client.authorization = Signet::OAuth2::Client.new(
-    token_credential_uri: 'https://accounts.google.com/o/oauth2/token',
-    audience: 'https://accounts.google.com/o/oauth2/token',
-    scope: 'https://docs.google.com/feeds/ ' \
-      'https://docs.googleusercontent.com/ ' \
-      'https://spreadsheets.google.com/feeds/',
-    issuer: ENV['google_issuer'],
-    signing_key: key
-  )
-  @session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!['access_token'])
-  @doc6566 = @session.spreadsheet_by_key(ENV['6566_key'])
-  @ws20 = @doc6566.worksheets[0]
-  @doc6768 = @session.spreadsheet_by_key(ENV['6768_key'])
-  @ws18 = @doc6768.worksheets[0]
-  @doc_sr = @session.spreadsheet_by_key(ENV['NT_key'])
-  @ws_sr = @doc_sr.worksheets[0]
-  @login_attempt = 1
-  @good_to_go = false
+  def initialize
+    client = Google::APIClient.new(application_name: 'HockeyArena', application_version: '0.0.0.0')
+    key = OpenSSL::PKey::RSA.new ENV['google_private_key'], ENV['google_secret']
+    client.authorization = Signet::OAuth2::Client.new(
+      token_credential_uri: 'https://accounts.google.com/o/oauth2/token',
+      audience: 'https://accounts.google.com/o/oauth2/token',
+      scope: 'https://docs.google.com/feeds/ ' \
+        'https://docs.googleusercontent.com/ ' \
+        'https://spreadsheets.google.com/feeds/',
+      issuer: ENV['google_issuer'],
+      signing_key: key
+    )
+    session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!['access_token'])
+    doc6566 = session.spreadsheet_by_key(ENV['6566_key'])
+    @ws20 = doc6566.worksheets[0]
+    doc6768 = session.spreadsheet_by_key(ENV['6768_key'])
+    @ws18 = doc6768.worksheets[0]
+    doc_sr = session.spreadsheet_by_key(ENV['NT_key'])
+    @ws_sr = doc_sr.worksheets[0]
+    @login_attempt = 1
+    @good_to_go = false
+  end
 
   def perform
     login_to_ha('speedysportwhiz', 'live')
