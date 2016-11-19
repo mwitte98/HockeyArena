@@ -1,0 +1,8 @@
+language: ruby
+
+addons:
+  postgresql: "9.4"
+
+bundler_args: --without production
+before_install:
+  - "rm ${BUNDLE_GEMFILE}.lock"
