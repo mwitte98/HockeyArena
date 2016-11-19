@@ -1,3 +1,7 @@
+test:
+  post:
+    - CODECLIMATE_REPO_TOKEN=$CODECLIMATE_REPO_TOKEN codeclimate-test-reporter
+
 deployment:
   production:
     branch: master

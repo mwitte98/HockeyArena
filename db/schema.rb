@@ -18,10 +18,10 @@ ActiveRecord::Schema.define(version: 20150802020853) do
 
   create_table "players", force: :cascade do |t|
     t.integer  "playerid"
-    t.string   "name",       limit: 255
+    t.string   "name"
     t.integer  "age"
     t.integer  "quality"
-    t.string   "potential",  limit: 255
+    t.string   "potential"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "team"
@@ -29,10 +29,10 @@ ActiveRecord::Schema.define(version: 20150802020853) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "name",            limit: 255
-    t.string   "email",           limit: 255
-    t.string   "password_digest", limit: 255
-    t.string   "remember_token",  limit: 255
+    t.string   "name"
+    t.string   "email"
+    t.string   "password_digest"
+    t.string   "remember_token"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
