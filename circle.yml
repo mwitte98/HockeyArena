@@ -6,6 +6,6 @@ deployment:
   production:
     branch: master
     commands:
-      - git push git@heroku.com:speedysportwhiz.git HEAD:refs/heads/master
+      - git push -f git@heroku.com:speedysportwhiz.git HEAD:refs/heads/master
       - heroku run rake db:migrate --app speedysportwhiz
  
