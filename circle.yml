@@ -6,7 +6,7 @@ deployment:
   production:
     branch: master
     commands:
-      - git fetch --all --unshallow
+      - "[[ ! -s \"$(git rev-parse --git-dir)/shallow\" ]] || git fetch --unshallow"
       - git push -f git@heroku.com:speedysportwhiz.git HEAD:refs/heads/master
       - heroku run rake db:migrate --app speedysportwhiz
  
