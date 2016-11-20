@@ -6,6 +6,6 @@ deployment:
   production:
     branch: master
     commands:
-      - git push git@heroku.com:speedysportwhiz.git $CIRCLE_SHA1:master
+      - git push -f git@heroku.com:speedysportwhiz.git $CIRCLE_SHA1:master
       - heroku run rake db:migrate --app speedysportwhiz
  
