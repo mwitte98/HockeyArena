@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.3.1'
+ruby '2.3.2'
 gem 'rails', '4.2.7.1'
 
 gem 'bcrypt', '~> 3.1.11'
@@ -21,6 +21,13 @@ gem 'uglifier', '~> 2.7.1'
 
 group :doc do
   gem 'sdoc', '0.4.1', require: false
+end
+
+group :test do
+  gem 'minitest-reporters', '~> 1.1', '>= 1.1.12'
+  gem 'shoulda', '~> 3.5'
+  gem 'simplecov', '~> 0.12.0'
+  gem 'codeclimate-test-reporter', '~> 1.0.0'
 end
 
 group :production do
