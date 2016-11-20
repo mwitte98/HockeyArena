@@ -1,0 +1,11 @@
+test:
+  post:
+    - CODECLIMATE_REPO_TOKEN=$CODECLIMATE_REPO_TOKEN bundle exec codeclimate-test-reporter
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - git push git@heroku.com:speedysportwhiz.git $CIRCLE_SHA1:master
+      - heroku run rake db:migrate --app speedysportwhiz
+ 
