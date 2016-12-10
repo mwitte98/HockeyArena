@@ -1,0 +1,17 @@
+scss_files: 'app/assets/stylesheets/**/*.css.scss'
+
+exclude:
+  - 'app/assets/stylesheets/application.css'
+  - 'app/assets/stylesheets/bootstrap.min.css'
+  - 'coverage/**/*'
+  - 'vendor/**/*'
+
+linters:
+  ColorVariable:
+    enabled: false
+  EmptyLineBetweenBlocks:
+    enabled: false
+  ImportantRule:
+    enabled: false
+  SingleLinePerSelector:
+    enabled: false

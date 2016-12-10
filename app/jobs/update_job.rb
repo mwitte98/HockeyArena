@@ -4,7 +4,7 @@ class UpdateJob
   require 'google/api_client'
 
   def initialize
-    client = Google::APIClient.new(application_name: 'HockeyArena', application_version: '0.0.0.0')
+    client = Google::APIClient.new application_name: 'HockeyArena'
     key = OpenSSL::PKey::RSA.new ENV['google_private_key'], ENV['google_secret']
     client.authorization = Signet::OAuth2::Client.new(
       token_credential_uri: 'https://accounts.google.com/o/oauth2/token',
@@ -16,291 +16,246 @@ class UpdateJob
       signing_key: key
     )
     session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!['access_token'])
-    doc6566 = session.spreadsheet_by_key(ENV['6566_key'])
-    @ws20 = doc6566.worksheets[0]
-    doc6768 = session.spreadsheet_by_key(ENV['6768_key'])
-    @ws18 = doc6768.worksheets[0]
-    doc_sr = session.spreadsheet_by_key(ENV['NT_key'])
-    @ws_sr = doc_sr.worksheets[0]
-    @login_attempt = 1
-    @good_to_go = false
+    @ws_u20_active = initialize_worksheet session, ENV['U20_20_key'], ENV['U20_20_seasons']
+    @ws_u20_next = initialize_worksheet session, ENV['U20_18_key'], ENV['U20_18_seasons']
+    @ws_sr = initialize_worksheet session, ENV['NT_key'], 'senior'
   end
 
   def perform
-    login_to_ha('speedysportwhiz', 'live')
-    if @good_to_go
-      update_team('speedysportwhiz', @ws20, '6566')
-      update_team('speedysportwhiz', @ws18, '6768')
-      update_team('speedysportwhiz', @ws_sr, 'senior')
-      update_ys('speedysportwhiz', 'live', false)
-      update_ys('speedysportwhiz', 'live', true)
-    end
-
-    login_to_ha('magicspeedo', 'live')
-    if @good_to_go
-      update_team('magicspeedo', @ws20, '6768')
-      update_team('magicspeedo', @ws_sr, 'senior')
-      update_ys('magicspeedo', 'live', false)
-      update_ys('magicspeedo', 'live', true)
-    end
-
-    login_to_ha('speedysportwhiz', 'beta')
-    if @good_to_go
-      update_ys('speedysportwhiz', 'beta', false)
-      update_ys('speedysportwhiz', 'beta', true)
-    end
-
-    login_to_ha('magicspeedo', 'beta')
-    return unless @good_to_go
-    update_ys('magicspeedo', 'beta', false)
-    update_ys('magicspeedo', 'beta', true)
+    update 'speedysportwhiz', 'live'
+    update 'magicspeedo', 'live'
+    update 'speedysportwhiz', 'beta'
+    update 'magicspeedo', 'beta'
   end
 
   private
 
-  def login_to_ha(mgr, version)
+  def update(mgr, version)
     # Login to HA
-    @login_attempt = 1
-    @good_to_go = false
-    @agent = Mechanize.new
-    @agent.get(version == 'live' ? 'http://www.hockeyarena.net/en/' : 'http://beta.hockeyarena.net/en/')
-    form = @agent.page.forms.first
-    form.nick = mgr
-    form.password = version == 'live' ? ENV['HA_password'] : ENV['beta_password']
-    form.submit
-    sleep 1
-    if !@agent.page.content.include?('Continue')
-      @good_to_go = true
-    else
-      puts "*****Login #{@login_attempt} to HA failed for #{mgr} #{version}. Trying again.*****"
-      @agent.page.search('#page').each do |info|
-        puts info.text
-      end
-      @login_attempt += 1
-      login_to_ha(mgr, version) if @login_attempt <= 2
+    login_to_ha mgr, version
+
+    page = @agent.page
+    if page.content.include?('Continue')
+      puts "*****Login #{login_attempt} to HA failed for #{mgr} #{version}*****"
+      page.search('#page').each { |info| puts info.text }
+      return
     end
+
+    # if version == 'live'
+    #   update_national_team @ws_u20_active, mgr
+    #   update_national_team @ws_u20_next, mgr
+    #   update_national_team @ws_sr, mgr
+    # end
+    update_ys mgr, version, false
+    update_ys mgr, version, true
   end
 
-  def update_team(mgr, ws, team)
+  def login_to_ha(mgr, version)
+    is_version_live = version == 'live'
+    @agent = Mechanize.new
+    @agent.get(is_version_live ? 'http://www.hockeyarena.net/en/' : 'http://beta.hockeyarena.net/en/')
+    form = @agent.page.forms.first
+    form.nick = mgr
+    form.password = is_version_live ? ENV['HA_password'] : ENV['beta_password']
+    form.submit
+    sleep 1
+  end
+
+  def update_national_team(ws, mgr)
     # Update team
-    (2..ws.num_rows).each do |a|
-      next unless (team != 'senior' && mgr == 'speedysportwhiz' && ws[a, 29] != 'y') ||
-                  (team != 'senior' && mgr == 'magicspeedo' && ws[a, 29] == 'y') ||
-                  (team == 'senior' && mgr == 'speedysportwhiz' && ws[a, 29] == 'y') ||
-                  (team == 'senior' && mgr == 'magicspeedo' && ws[a, 29] != 'y')
+    ws.manager = mgr
+    (2..ws.ws.num_rows).each do |row_num|
+      next unless ws.update_row?(row_num)
       begin
-        @agent = update_player(ws, team, a, @agent, mgr)
+        update_player(ws, mgr)
       rescue Nokogiri::XML::XPath::SyntaxError
         redo
       end
     end
   end
 
-  def strip_percent(value)
-    return value[0] if value[2] == '('
-    return value[0..1] if value[3] == '('
-    return value[0..2] if value[4] == '('
-    value
-  end
-
-  def update_player(ws, team, row, agent, mgr)
-    col = team == 'senior' ? 1 : 0
-    id = ws[row, 28]
+  def update_player(ws, mgr)
+    id = ws.id
 
     # don't update if there's no id
-    return agent if id == ''
+    return if id == ''
 
-    agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
-    if agent.page.content.include? 'Player does not exist or has retired !'
-      (2..27).each { |a| ws[row, a] = 'DELETE' }
-      return agent
+    # mark player as deleted if he doesn't exist anymore
+    @agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
+    page = @agent.page
+    if page.content.include? 'Player does not exist or has retired !'
+      ws.mark_player_as_deleted
+      return
     end
 
-    player_info = []
-    agent.page.search('.q1, .q').each do |info|
-      player_info << info.text
-    end
+    # update player attributes and click on team name link
+    update_nt_player_attributes ws, mgr
 
-    if team == 'senior'
-      ws[row, 2] = player_info[2] # age
-    end
-    ws[row, 2 + col] = player_info[0] # ai
-
-    if player_info.size > 35 # player is scouted
-      ws[row, 7 + col] = strip_percent(player_info[16]) # goa
-      ws[row, 8 + col] = strip_percent(player_info[18]) # def
-      ws[row, 9 + col] = strip_percent(player_info[20]) # off
-      ws[row, 10 + col] = strip_percent(player_info[22]) # shot
-      ws[row, 11 + col] = strip_percent(player_info[24]) # pass
-      ws[row, 12 + col] = strip_percent(player_info[17]) # spd
-      ws[row, 13 + col] = strip_percent(player_info[19]) # str
-      ws[row, 14 + col] = strip_percent(player_info[21]) # sco
-      ws[row, 16 + col] = strip_percent(player_info[25]) # exp
-
-      if (mgr == 'speedysportwhiz' && player_info[5] == 'RIT Tigers') ||
-         (mgr == 'magicspeedo' && player_info[5] == 'McDeedo Punch')
-        ws[row, 21 + col] = player_info[34] # games
-        ws[row, 22 + col] = player_info[36] # min
-      else
-        ws[row, 21 + col] = player_info[31] # games
-        ws[row, 22 + col] = player_info[33] # min
-      end
-    else # player isn't scouted
-      ws[row, 21 + col] = player_info[19] # games
-      ws[row, 22 + col] = player_info[21] # min
-    end
-
-    agent.page.link_with(text: player_info[5]).click
-    team_id = agent.page.uri.to_s[77..-1]
-    agent.get(
+    # go to player's team's stadium page
+    team_id = @agent.current_page.uri.to_s[77..-1]
+    @agent.get(
       "http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}"
     )
-    stadium_info = []
-    agent.page.search('.sr1 .yspscores').each do |info|
-      stadium_info << info.text.strip
-    end
 
-    # stadium training
-    ws[row, 5 + col] = stadium_info[3][0] == '0' ? 0 : stadium_info[3][0..2]
+    # update player's team stadium
+    update_nt_player_stadium ws
 
-    player_in_db = Player.find_by(name: ws[row, 1], team: team)
-    if player_in_db.nil?
-      Player.create!(
-        playerid: ws[row, 28],
-        name: ws[row, 1],
-        age: player_info[2],
-        quality: ws[row, 3 + col],
-        potential: ws[row, 4 + col],
-        team: team,
-        daily: {
-          DateTime.now.in_time_zone('Eastern Time (US & Canada)') => {
-            ai: ws[row, 2 + col].to_i,
-            stadium: ws[row, 5 + col].to_i,
-            goalie: ws[row, 7 + col].to_i,
-            defense: ws[row, 8 + col].to_i,
-            offense: ws[row, 9 + col].to_i,
-            shooting: ws[row, 10 + col].to_i,
-            passing: ws[row, 11 + col].to_i,
-            speed: ws[row, 12 + col].to_i,
-            strength: ws[row, 13 + col].to_i,
-            selfcontrol: ws[row, 14 + col].to_i,
-            playertype: ws[row, 15 + col],
-            experience: ws[row, 16 + col].to_i,
-            games: ws[row, 21 + col].to_i,
-            minutes: ws[row, 22 + col].to_i
-          }
-        }
-      )
-    else
-      ai_hash = player_in_db['daily']
-      ai_hash[DateTime.now.in_time_zone('Eastern Time (US & Canada)')] = {
-        ai: ws[row, 2 + col].to_i,
-        stadium: ws[row, 5 + col].to_i,
-        goalie: ws[row, 7 + col].to_i,
-        defense: ws[row, 8 + col].to_i,
-        offense: ws[row, 9 + col].to_i,
-        shooting: ws[row, 10 + col].to_i,
-        passing: ws[row, 11 + col].to_i,
-        speed: ws[row, 12 + col].to_i,
-        strength: ws[row, 13 + col].to_i,
-        selfcontrol: ws[row, 14 + col].to_i,
-        playertype: ws[row, 15 + col],
-        experience: ws[row, 16 + col].to_i,
-        games: ws[row, 21 + col].to_i,
-        minutes: ws[row, 22 + col].to_i
-      }
-      player_in_db.update(age: player_info[2],
-                          quality: ws[row, 3 + col],
-                          potential: ws[row, 4 + col],
-                          daily: ai_hash)
-    end
+    # create or update player in db
+    update_nt_player_in_db ws
 
     begin
-      ws.synchronize # save and reload
+      ws.ws.synchronize # save and reload
     rescue GoogleDrive::Error
-      puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws[row, 1]}**********"
+      puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws.name}**********"
     end
-
-    agent
   end
 
-  def update_ys(mgr, version, draft)
+  def update_ys(mgr, version, is_draft)
     # Update youth school
-    ys_info = []
-    player_info = []
-    count = 0
     if version == 'live'
       @agent.get('http://www.hockeyarena.net/en/index.php?p=manager_youth_school_form.php')
     else
       @agent.get('http://beta.hockeyarena.net/en/index.php?p=manager_youth_school_form.php')
     end
-    if draft
+
+    if is_draft
+      # don't update if draft and draft has happened
+      return if @agent.page.search('#table-2 .thead td').size > 8
       search_string = '#table-2 tbody .center , #table-2 tbody .left , ' \
                       '#table-3 tbody .center , #table-3 tbody .left'
     else
       search_string = '#table-1 tbody td'
     end
-    @agent.page.search(search_string).each do |info| # Pull YS info from site
-      count += 1
-      if count.positive? && count < 7
-        player_info << count == 2 || count == 5 ? info.text.strip : info.text.strip[1..-1]
-      elsif (!draft && count == 9) || (draft && count == 8)
-        ys_info << player_info
-        count = 0
-        player_info = []
-      end
-    end
 
-    names = []
-    ys_info.each do |player|
-      names << player[0]
-    end
+    players = get_ys_players is_draft, search_string
 
-    # Names of all players that have been tracked
-    names_in_doc = []
-    players_in_doc = YouthSchool.where(manager: mgr, version: version, draft: draft)
-    players_in_doc.each do |player|
-      names_in_doc << player['name']
-    end
+    params = { players: players, mgr: mgr, version: version, is_draft: is_draft }
 
-    # Delete players from db that have been deleted on HA
-    names_in_doc.each do |name|
-      unless names.include?(name)
-        YouthSchool.find_by(name: name, manager: mgr, version: version, draft: draft).delete
-      end
-    end
+    remove_deleted_ys_players params
 
     # Add new day to db
+    update_ys_player_in_db params
+  end
+
+  def update_nt_player_attributes(ws, mgr)
+    page = @agent.page
+    player_attributes = []
+    page.search('.q1, .q').each { |player_attribute| player_attributes << player_attribute.text }
+    player_attributes[3] = mgr
+    player = NtPlayer.new(player_attributes)
+
+    ws.update_row player
+
+    player_team = player_attributes[5]
+    page.link_with(text: player_team).click
+  end
+
+  def update_nt_player_stadium(ws)
+    stadium_attributes = []
+    @agent.page.search('.sr1 .yspscores').each { |area| stadium_attributes << area.text.strip }
+
+    # stadium training
+    stadium_training = stadium_attributes[3]
+    ws.stadium = stadium_training[0] == '0' ? 0 : stadium_training[0..2]
+  end
+
+  def update_nt_player_in_db(ws)
+    player_name = ws.name
+    id = ws.id
+    team = ws.team
+    player_hash = ws.player_hash
+    player_age = ws.age
+    quality = ws.quality
+    potential = ws.potential
+    nt_player = Player.find_by(name: player_name, team: team)
+    datetime = DateTime.now.in_time_zone('Eastern Time (US & Canada)')
+    if nt_player.nil?
+      Player.create!(playerid: id, name: player_name, age: player_age, quality: quality,
+                     potential: potential, team: team, daily: { datetime => player_hash })
+    else
+      ai_hash = nt_player['daily']
+      ai_hash[datetime] = player_hash
+      nt_player.update(age: player_age, quality: quality, potential: potential, daily: ai_hash)
+    end
+  end
+
+  def get_ys_players(is_draft, search_string)
+    players = []
+    player_attributes = []
+    count = 0
+
+    # pull ys info from site
+    @agent.page.search(search_string).each do |player_attribute|
+      count += 1
+      if count < 7
+        stripped_text = player_attribute.text.strip
+        player_attributes << (count == 2 || count == 5 ? stripped_text : stripped_text[1..-1])
+      elsif end_of_ys_row?(is_draft, count)
+        players << player_attributes
+        player_attributes = []
+        count = 0
+      end
+    end
+
+    players
+  end
+
+  def end_of_ys_row?(is_draft, count)
+    (!is_draft && count == 9) || (is_draft && count == 8)
+  end
+
+  def remove_deleted_ys_players(params)
+    mgr = params[:mgr]
+    version = params[:version]
+    is_draft = params[:is_draft]
+    names = []
+    params[:players].each { |player| names << player[0] }
+
+    # Names of all players that have been tracked
+    names_in_db = []
+    players_in_db = YouthSchool.where(manager: mgr, version: version, draft: is_draft)
+    players_in_db.each { |player| names_in_db << player['name'] }
+
+    # Delete players from db that have been deleted on HA
+    names_in_db.each do |name|
+      unless names.include?(name)
+        YouthSchool.find_by(name: name, manager: mgr, version: version, draft: is_draft).delete
+      end
+    end
+  end
+
+  def update_ys_player_in_db(params)
+    mgr = params[:mgr]
+    version = params[:version]
+    is_draft = params[:is_draft]
     player_priority = 1
-    ys_info.each do |player|
-      player_in_db = YouthSchool.find_by(name: player[0],
-                                         manager: mgr,
-                                         version: version,
-                                         draft: draft)
-      if player_in_db.nil?
-        YouthSchool.create!(name: player[0],
-                            age: player[1],
-                            quality: player[2],
-                            potential: player[3],
-                            talent: player[4],
+    params[:players].each do |player|
+      name = player[0]
+      ys_player = YouthSchool.find_by(name: name, manager: mgr, version: version, draft: is_draft)
+      if ys_player.nil?
+        YouthSchool.create!(name: name, age: player[1], quality: player[2],
+                            potential: player[3], talent: player[4],
                             ai: {
                               DateTime.now.in_time_zone('Eastern Time (US & Canada)') => player[5]
                             },
-                            priority: player_priority,
-                            manager: mgr,
-                            version: version,
-                            draft: draft)
+                            priority: player_priority, manager: mgr,
+                            version: version, draft: is_draft)
       else
-        ai_hash = player_in_db['ai']
-        ai_hash[DateTime.now.in_time_zone('Eastern Time (US & Canada)')] = player[5]
-        player_in_db.update(age: player[1],
-                            quality: player[2],
-                            potential: player[3],
-                            talent: player[4],
-                            ai: ai_hash,
-                            priority: player_priority)
+        update_ys_player(player, ys_player, player_priority)
       end
       player_priority += 1
     end
+  end
+
+  def update_ys_player(player, ys_player, player_priority)
+    ai_hash = ys_player['ai']
+    datetime = DateTime.now.in_time_zone('Eastern Time (US & Canada)')
+    ai_hash[datetime] = player[5]
+    ys_player.update(age: player[1], quality: player[2], potential: player[3],
+                     talent: player[4], ai: ai_hash, priority: player_priority)
+  end
+
+  def initialize_worksheet(session, key, team)
+    Worksheet.new(ws: session.spreadsheet_by_key(key).worksheets[0], team: team)
   end
 end

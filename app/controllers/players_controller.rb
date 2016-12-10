@@ -1,19 +1,27 @@
 class PlayersController < ApplicationController
   before_action :signed_in_user
 
-  def show6566
-    @player_instances = Player.where(team: '6566')
-    @players = prepare_tables(@player_instances)
-  end
-
-  def show6768
-    @player_instances = Player.where(team: '6768')
-    @players = prepare_tables(@player_instances)
-  end
-
-  def show_senior
-    @player_instances = Player.where(team: 'senior')
-    @players = prepare_tables(@player_instances)
+  def show_national_team
+    params_team = params[:team]
+    team = if params_team == 'u20_active'
+             ENV['U20_20_seasons']
+           elsif params_team == 'u20_next'
+             ENV['U20_18_seasons']
+           else
+             'senior'
+           end
+    @players = []
+    @player_instances = Player.where(team: team)
+    @player_instances.each do |instance|
+      daily = instance.daily
+      keys = []
+      daily.keys.sort.each { |key| keys << key }
+      dates = keys[-2..-1]
+      dates = keys if dates.nil?
+      player = []
+      dates.each { |date| player << daily[date] }
+      @players << player
+    end
   end
 
   def show
@@ -31,18 +39,18 @@ class PlayersController < ApplicationController
     player_team = player.team
     Player.delete_all(['name = ?', player_name])
     flash[:success] = "#{player_name} deleted."
-    if player_team == '6566'
-      redirect_to players6566_path
-    elsif player_team == '6768'
-      redirect_to players6768_path
+    if player_team == ENV['U20_20_seasons']
+      redirect_to national_path(team: 'u20_active')
+    elsif player_team == ENV['U20_18_seasons']
+      redirect_to national_path(team: 'u20_next')
     else
-      redirect_to playersSenior_path
+      redirect_to national_path(team: 'senior')
     end
   end
 
   def update_info
     UpdateJob.new.async.perform
-    redirect_to players6566_path
+    redirect_to national_path(team: 'u20_active')
   end
 
   private
@@ -51,23 +59,5 @@ class PlayersController < ApplicationController
     return if signed_in?
     flash[:warning] = 'You must be signed in to access that page.'
     redirect_to root_url
-  end
-
-  def prepare_tables(player_instances)
-    players = []
-    player_instances.each do |instance|
-      keys = []
-      instance.daily.keys.sort.each do |key|
-        keys << key
-      end
-      dates = keys[-2..-1]
-      dates = keys if dates.nil?
-      player = []
-      dates.each do |date|
-        player << instance.daily[date]
-      end
-      players << player
-    end
-    players
   end
 end
