@@ -1,7 +1,7 @@
 <header class="navbar navbar-default navbar-inverse">
   <div class="container">
     <div class="navbar-header">
-      <%= link_to "USA U20", root_path, id: "logo" %>
+      <%= link_to "USA HA", root_path, class: "logo" %>
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
@@ -14,25 +14,30 @@
       <ul class="nav navbar-nav navbar-right">
         <li><%= link_to "Home", root_path %></li>
         <% if signed_in? %>
-          <li><%= link_to "U20:65-66", players6566_path %></li>
-          <li><%= link_to "U20:67-68", players6768_path %></li>
-          <li><%= link_to "Senior", playersSenior_path %></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">National <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><%= link_to "U20: Active", national_path(team: 'u20_active') %></li>
+              <li><%= link_to "U20: Next", national_path(team: 'u20_next') %></li>
+              <li><%= link_to "Senior", national_path(team: 'senior') %></li>
+            </ul>
+          </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Youth School <b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><%= link_to "speedysportwhiz - Live", speedyLiveYS_path %></li>
-              <li><%= link_to "speedysportwhiz - Beta", speedyBetaYS_path %></li>
-              <li><%= link_to "magicspeedo - Live", speedoLiveYS_path %></li>
-              <li><%= link_to "magicspeedo - Beta", speedoBetaYS_path %></li>
+              <li><%= link_to "speedysportwhiz - Live", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'ys') %></li>
+              <li><%= link_to "speedysportwhiz - Beta", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'ys') %></li>
+              <li><%= link_to "magicspeedo - Live", ys_path(manager: 'magicspeedo', version: 'live', type: 'ys') %></li>
+              <li><%= link_to "magicspeedo - Beta", ys_path(manager: 'magicspeedo', version: 'beta', type: 'ys') %></li>
             </ul>
           </li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Draft <b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><%= link_to "speedysportwhiz - Live", speedyLiveDraft_path %></li>
-              <li><%= link_to "speedysportwhiz - Beta", speedyBetaDraft_path %></li>
-              <li><%= link_to "magicspeedo - Live", speedoLiveDraft_path %></li>
-              <li><%= link_to "magicspeedo - Beta", speedoBetaDraft_path %></li>
+              <li><%= link_to "speedysportwhiz - Live", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'draft') %></li>
+              <li><%= link_to "speedysportwhiz - Beta", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'draft') %></li>
+              <li><%= link_to "magicspeedo - Live", ys_path(manager: 'magicspeedo', version: 'live', type: 'draft') %></li>
+              <li><%= link_to "magicspeedo - Beta", ys_path(manager: 'magicspeedo', version: 'beta', type: 'draft') %></li>
             </ul>
           </li>
           <li class="dropdown">
