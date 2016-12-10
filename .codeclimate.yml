@@ -18,14 +18,17 @@ engines:
     enabled: true
   fixme:
     enabled: true
+  reek:
+    enabled: true
   rubocop:
+    enabled: true
+  scss-lint:
     enabled: true
 ratings:
   paths:
   - config.ru
   - Gemfile
   - Gemfile.lock
-  - Guardfile
   - Procfile
   - Rakefile
   - "**.erb"
@@ -33,9 +36,11 @@ ratings:
   - "**.css"
   - "**.coffee"
   - "**.js"
+  - "**.scss"
 exclude_paths:
 - 'bin/**/*'
 - 'client/**/*'
+- 'coverage/**/*'
 - 'tmp/**/*'
 - 'vendor/**/*'
-- 'db/schema.rb'
+- 'db/**/*'

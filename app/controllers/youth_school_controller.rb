@@ -1,50 +1,14 @@
 class YouthSchoolController < ApplicationController
   before_action :signed_in_user
 
-  def speedy_live_ys
-    @players = YouthSchool.where(manager: 'speedysportwhiz', version: 'live', draft: false)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedy_live_draft
-    @players = YouthSchool.where(manager: 'speedysportwhiz', version: 'live', draft: true)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedy_beta_ys
-    @players = YouthSchool.where(manager: 'speedysportwhiz', version: 'beta', draft: false)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedy_beta_draft
-    @players = YouthSchool.where(manager: 'speedysportwhiz', version: 'beta', draft: true)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedo_live_ys
-    @players = YouthSchool.where(manager: 'magicspeedo', version: 'live', draft: false)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedo_live_draft
-    @players = YouthSchool.where(manager: 'magicspeedo', version: 'live', draft: true)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedo_beta_ys
-    @players = YouthSchool.where(manager: 'magicspeedo', version: 'beta', draft: false)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
-  end
-
-  def speedo_beta_draft
-    @players = YouthSchool.where(manager: 'magicspeedo', version: 'beta', draft: true)
+  def show
+    manager = params[:manager]
+    version = params[:version]
+    type = params[:type]
+    is_draft = type == 'draft'
+    @title = "#{manager} #{version.capitalize} "
+    @title += is_draft ? type.capitalize : type.upcase
+    @players = YouthSchool.where(manager: manager, version: version, draft: is_draft)
                           .order('priority ASC')
     @dates, @ai_array, @calculations = prepare_tables(@players)
   end
@@ -59,37 +23,44 @@ class YouthSchoolController < ApplicationController
 
   def prepare_tables(players)
     return [], [], [] if players.empty?
+    dates = format_dates players.last
+    ai_array = []
+    calculations = []
+    players.each do |player|
+      player_ai = []
+      ai_hash = player.ai
+      ai_hash.keys.sort.each { |key| player_ai << ai_hash[key].to_i }
+      ai_array << player_ai
+      calculations << calculate_calculations(player, player_ai)
+    end
+    [dates, ai_array, calculations]
+  end
+
+  def format_dates(player)
     dates = []
-    players.last.ai.keys.sort.each do |key|
+    player.ai.keys.sort.each do |key|
       time = key.to_time.getgm + 1.days
       dates << "#{time.day}.#{time.month}"
     end
-    ai_array = []
-    calculations = []
-    player_ai = []
+    dates
+  end
+
+  def calculate_calculations(player, player_ai)
     player_calculations = []
-    players.each do |player|
-      player.ai.keys.sort.each do |key|
-        player_ai << player.ai[key].to_i
-      end
-      ai_array << player_ai
-      length = player_ai.length
-      player_calculations << player_ai.inject(:+).to_f / length # average
-      player_calculations << player_ai.min # min
-      sorted = player_ai.sort
-      player_calculations << (sorted[(length - 1) / 2] + sorted[length / 2]) / 2.0 # median
-      player_calculations << player_ai.max # max
-      player_calculations << 0 # times above ai for age
-      player_ai.each do |ai|
-        next unless (player.age == 16 && ai >= 40) ||
-                    (player.age == 17 && ai >= 70) ||
-                    (player.age == 18 && ai >= 100)
-        player_calculations[4] += 1
-      end
-      calculations << player_calculations
-      player_ai = []
-      player_calculations = []
-    end
-    [dates, ai_array, calculations]
+    length = player_ai.length
+    player_calculations << player_ai.inject(:+).to_f / length # average
+    player_calculations << player_ai.min # min
+    sorted = player_ai.sort
+    player_calculations << (sorted[(length - 1) / 2] + sorted[length / 2]) / 2.0 # median
+    player_calculations << player_ai.max # max
+    player_calculations << 0 # times above ai for age
+    age = player.age
+    player_ai.each { |ai| player_calculations[4] += 1 if above_ai_for_age?(age, ai) }
+    player_calculations
+  end
+
+  def above_ai_for_age?(age, ai)
+    # if age = 16, ai > 40; if age = 17, ai > 70; if age = 18, ai > 100
+    ai >= 10 + (age - 15) * 30
   end
 end

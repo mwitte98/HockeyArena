@@ -1,3 +1,20 @@
+<% provide(:title, @title) %>
+<div class="row">
+  <h2 style="float: left"><%= @title %></h2>
+  <div style="float:right; margin-top: 17px">
+    <% if @title.include? 'speedysportwhiz' %>
+      <%= link_to "speedy Live YS", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'ys'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedy Live Draft", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'draft'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedy Beta YS", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'ys'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedy Beta Draft", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'draft'), {class: "btn btn-md btn-primary"} %>
+    <% else %>
+      <%= link_to "speedo Live YS", ys_path(manager: 'magicspeedo', version: 'live', type: 'ys'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedo Live Draft", ys_path(manager: 'magicspeedo', version: 'live', type: 'draft'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedo Beta YS", ys_path(manager: 'magicspeedo', version: 'beta', type: 'ys'), {class: "btn btn-md btn-primary"} %>
+      <%= link_to "speedo Beta Draft", ys_path(manager: 'magicspeedo', version: 'beta', type: 'draft'), {class: "btn btn-md btn-primary"} %>
+    <% end %>
+  </div>
+</div>
 <table id="youthTable" style="margin-top: 20px">
   <thead>
     <tr>

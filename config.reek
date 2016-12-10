@@ -1,0 +1,23 @@
+Attribute:
+  enabled: false
+FeatureEnvy:
+  enabled: false
+InstanceVariableAssumption:
+  enabled: false
+IrresponsibleModule:
+  enabled: false
+NestedIterators:
+  max_allowed_nesting: 2
+NilCheck:
+  enabled: false
+TooManyInstanceVariables:
+  max_instance_variables: 5
+TooManyMethods:
+  enabled: false
+TooManyStatements:
+  max_statements: 20
+UtilityFunction:
+  enabled: false
+
+exclude_paths:
+  - db/
