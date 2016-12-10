@@ -41,11 +41,11 @@ class UpdateJob
       return
     end
 
-    # if version == 'live'
-    #   update_national_team @ws_u20_active, mgr
-    #   update_national_team @ws_u20_next, mgr
-    #   update_national_team @ws_sr, mgr
-    # end
+    if version == 'live'
+      update_national_team @ws_u20_active, mgr
+      update_national_team @ws_u20_next, mgr
+      update_national_team @ws_sr, mgr
+    end
     update_ys mgr, version, false
     update_ys mgr, version, true
   end
