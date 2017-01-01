@@ -49,7 +49,7 @@ class PlayersController < ApplicationController
   end
 
   def update_info
-    UpdateJob.new.async.perform
+    UpdateJob.perform_async
     redirect_to national_path(team: 'u20_active')
   end
 

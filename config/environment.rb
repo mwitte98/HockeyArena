@@ -1,7 +1,9 @@
-# Load the rails application
-require File.expand_path('../application', __FILE__)
+# Load the Rails application.
+require_relative 'application'
+
 # Load environment vars from local file
-env = File.join(Rails.root, '.env')
+env = Rails.root.join('.env')
 load(env) if File.exist?(env)
-# Initialize the rails application
+
+# Initialize the Rails application.
 Rails.application.initialize!
