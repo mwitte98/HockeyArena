@@ -5,7 +5,7 @@ gem 'rails', '5.0.1'
 gem 'bcrypt', '~> 3.1.11'
 gem 'bootstrap-sass', '~> 3.3.6'
 gem 'coffee-rails', '~> 4.2.1'
-gem 'google_drive', '~> 1.0.6'
+gem 'google_drive', '~> 2.1.2'
 gem 'jquery-datatables-rails', '~> 3.4.0'
 gem 'jquery-rails', '4.2.2'
 gem 'mechanize', '~> 2.7.4'
@@ -21,7 +21,7 @@ gem 'uglifier', '~> 3.0.4'
 
 group :test do
   gem 'codeclimate-test-reporter', '~> 1.0.0'
-  gem 'minitest-reporters', '~> 1.1', '>= 1.1.13'
+  gem 'minitest-reporters', '~> 1.1.13'
   gem 'shoulda', git: 'https://github.com/thoughtbot/shoulda.git', branch: 'ew-out-with-the-old'
   gem 'simplecov', '~> 0.12.0'
 end
