@@ -1,21 +1,8 @@
 class UpdateJob
   include SuckerPunch::Job
-  require 'active_support/core_ext'
-  require 'google/api_client'
 
   def initialize
-    client = Google::APIClient.new application_name: 'HockeyArena'
-    key = OpenSSL::PKey::RSA.new ENV['google_private_key'], ENV['google_secret']
-    client.authorization = Signet::OAuth2::Client.new(
-      token_credential_uri: 'https://accounts.google.com/o/oauth2/token',
-      audience: 'https://accounts.google.com/o/oauth2/token',
-      scope: 'https://docs.google.com/feeds/ ' \
-        'https://docs.googleusercontent.com/ ' \
-        'https://spreadsheets.google.com/feeds/',
-      issuer: ENV['google_issuer'],
-      signing_key: key
-    )
-    session = GoogleDrive.login_with_oauth(client.authorization.fetch_access_token!['access_token'])
+    session = GoogleDrive::Session.from_service_account_key(StringIO.new(ENV['client_secret']))
     @ws_u20_active = initialize_worksheet session, ENV['U20_20_key'], ENV['U20_20_seasons']
     @ws_u20_next = initialize_worksheet session, ENV['U20_18_key'], ENV['U20_18_seasons']
     @ws_sr = initialize_worksheet session, ENV['NT_key'], 'senior'
