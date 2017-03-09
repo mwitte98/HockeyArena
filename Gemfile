@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.4.0'
-gem 'rails', '5.0.1'
+gem 'rails', '5.0.2'
 
 gem 'bcrypt', '~> 3.1.11'
 gem 'bootstrap-sass', '~> 3.3.6'
@@ -17,13 +17,13 @@ gem 'sass-rails', '~> 5.0.3'
 gem 'sprockets', '~> 3.7.1'
 gem 'sprockets-rails', require: 'sprockets/railtie'
 gem 'sucker_punch', '~> 2.0.2'
-gem 'uglifier', '~> 3.0.4'
+gem 'uglifier', '~> 3.1.4'
 
 group :test do
-  gem 'codeclimate-test-reporter', '~> 1.0.0'
+  gem 'codeclimate-test-reporter', '~> 1.0.6'
   gem 'minitest-reporters', '~> 1.1.13'
-  gem 'shoulda', git: 'https://github.com/thoughtbot/shoulda.git', branch: 'ew-out-with-the-old'
-  gem 'simplecov', '~> 0.12.0'
+  gem 'shoulda', git: 'https://github.com/thoughtbot/shoulda.git', branch: 'master'
+  gem 'simplecov', '~> 0.13.0'
 end
 
 group :production do
