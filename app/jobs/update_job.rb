@@ -155,7 +155,7 @@ class UpdateJob
     quality = ws.quality
     potential = ws.potential
     nt_player = Player.find_by(name: player_name, team: team)
-    datetime = DateTime.now.in_time_zone('Eastern Time (US & Canada)')
+    datetime = Time.now.in_time_zone('Eastern Time (US & Canada)')
     if nt_player.nil?
       Player.create!(playerid: id, name: player_name, age: player_age, quality: quality,
                      potential: potential, team: team, daily: { datetime => player_hash })
@@ -223,7 +223,7 @@ class UpdateJob
         YouthSchool.create!(name: name, age: player[1], quality: player[2],
                             potential: player[3], talent: player[4],
                             ai: {
-                              DateTime.now.in_time_zone('Eastern Time (US & Canada)') => player[5]
+                              Time.now.in_time_zone('Eastern Time (US & Canada)') => player[5]
                             },
                             priority: player_priority, manager: mgr,
                             version: version, draft: is_draft)
@@ -236,7 +236,7 @@ class UpdateJob
 
   def update_ys_player(player, ys_player, player_priority)
     ai_hash = ys_player['ai']
-    datetime = DateTime.now.in_time_zone('Eastern Time (US & Canada)')
+    datetime = Time.now.in_time_zone('Eastern Time (US & Canada)')
     ai_hash[datetime] = player[5]
     ys_player.update(age: player[1], quality: player[2], potential: player[3],
                      talent: player[4], ai: ai_hash, priority: player_priority)
