@@ -20,11 +20,10 @@ gem 'sucker_punch', '2.0.4'
 gem 'uglifier', '4.1.6'
 
 group :test do
-  gem 'codeclimate-test-reporter', '1.0.8'
   gem 'minitest-reporters', '1.1.19'
   gem 'rubocop', '0.52.1'
   gem 'shoulda', git: 'https://github.com/thoughtbot/shoulda.git'
-  gem 'simplecov', '0.13.0'
+  gem 'simplecov', '0.15.1'
 end
 
 group :production do
