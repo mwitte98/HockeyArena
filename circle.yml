@@ -1,6 +1,18 @@
-test:
+machine:
+  environment:
+    CC_TEST_REPORTER_ID: $CODECLIMATE_REPO_TOKEN
+
+dependencies:
   post:
-    - CODECLIMATE_REPO_TOKEN=$CODECLIMATE_REPO_TOKEN bundle exec codeclimate-test-reporter
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter
+
+test:
+  pre:
+    - ./cc-test-reporter before-build
+
+  post:
+    - ./cc-test-reporter after-build --id $CODECLIMATE_REPO_TOKEN --exit-code $EXIT_CODE
 
 deployment:
   production:

@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
-  resources :users,        only: [:new,  :create, :update, :edit]
-  resources :sessions,     only: [:new,  :create, :destroy]
+  resources :users,        only: %i[new create update edit]
+  resources :sessions,     only: %i[new create destroy]
   resources :players,      only: [:show]
   resources :players do
     collection do
