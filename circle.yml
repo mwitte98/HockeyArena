@@ -12,8 +12,7 @@ test:
     - ./cc-test-reporter before-build
 
   post:
-    - export CC_TEST_REPORTER_ID=$CODECLIMATE_REPO_TOKEN
-    - ./cc-test-reporter after-build --exit-code $EXIT_CODE
+    - ./cc-test-reporter after-build --id $CODECLIMATE_REPO_TOKEN --exit-code $EXIT_CODE
 
 deployment:
   production:
