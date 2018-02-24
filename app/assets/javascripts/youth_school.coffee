@@ -3,7 +3,8 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 jQuery ->
-  $('#youthTable').dataTable( {
-    "aLengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-    "iDisplayLength": -1
+  $('#youthTable').DataTable( {
+    "paging": false,
+    "pageLength": -1,
+    "order": [[$("table > tbody > tr:first > td").length - 3, 'desc']]
   } )

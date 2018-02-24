@@ -28,9 +28,7 @@
       <% end %>
       <th>Avg</th>
       <th>Min</th>
-      <th>Med</th>
       <th>Max</th>
-      <th>>AI</th>
     </tr>
   </thead>
   <tbody>
@@ -47,10 +45,14 @@
           <% end %>
         <% end %>
         <% @ai_array[index].each do |ai| %>
-          <% if (player.age == 16 and ai >= 40) or (player.age == 17 and ai >= 70) or (player.age == 18 and ai >= 100) %>
+          <% if (player.age == 16 and ai >= 49) or (player.age == 17 and ai >= 78) or (player.age == 18 and ai >= 111) %>
             <td class="blue"><%= ai %></td>
-          <% elsif (player.age == 16 and ai >= 35) or (player.age == 17 and ai >= 65) or (player.age == 18 and ai >= 95) %>
+          <% elsif (player.age == 16 and ai >= 47) or (player.age == 17 and ai >= 76) or (player.age == 18 and ai >= 103) %>
             <td class="green"><%= ai %></td>
+          <% elsif (player.age == 16 and ai <= 5) or (player.age == 17 and ai <= 31) %>
+            <td class="red"><%= ai %></td>
+          <% elsif (player.age == 16 and ai <= 7) or (player.age == 17 and ai <= 33) %>
+            <td class="orange"><%= ai %></td>
           <% else %>
             <td><%= ai %></td>
           <% end %>
@@ -58,8 +60,6 @@
         <td><%= sprintf("%.2f", @calculations[index][0]) %></td>
         <td><%= @calculations[index][1] %></td>
         <td><%= @calculations[index][2] %></td>
-        <td><%= @calculations[index][3] %></td>
-        <td><%= @calculations[index][4] %></td>
       </tr>
     <% end %>
   </tbody>
