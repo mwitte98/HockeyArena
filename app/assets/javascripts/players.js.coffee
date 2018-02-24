@@ -3,30 +3,30 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 jQuery ->
-  $('#allPlayers').dataTable( {
-    "aLengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-    "iDisplayLength": -1,
+  $('#allPlayers').DataTable( {
+    "paging": false,
+    "pageLength": -1,
     "order": [[1, 'desc']],
-    "aoColumns": [
+    "columns": [
         null,
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
         null,
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
         null,
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
-        { "asSorting": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
+        { "orderSequence": [ "desc", "asc" ] },
     ]
   } )

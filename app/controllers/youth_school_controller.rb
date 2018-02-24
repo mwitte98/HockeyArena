@@ -31,7 +31,7 @@ class YouthSchoolController < ApplicationController
       ai_hash = player.ai
       ai_hash.keys.sort.each { |key| player_ai << ai_hash[key].to_i }
       ai_array << player_ai
-      calculations << calculate_calculations(player, player_ai)
+      calculations << calculate_calculations(player_ai)
     end
     [dates, ai_array, calculations]
   end
@@ -45,22 +45,11 @@ class YouthSchoolController < ApplicationController
     dates
   end
 
-  def calculate_calculations(player, player_ai)
-    player_calculations = []
-    length = player_ai.length
-    player_calculations << player_ai.inject(:+).to_f / length # average
-    player_calculations << player_ai.min # min
-    sorted = player_ai.sort
-    player_calculations << (sorted[(length - 1) / 2] + sorted[length / 2]) / 2.0 # median
-    player_calculations << player_ai.max # max
-    player_calculations << 0 # times above ai for age
-    age = player.age
-    player_ai.each { |ai| player_calculations[4] += 1 if above_ai_for_age?(age, ai) }
-    player_calculations
-  end
-
-  def above_ai_for_age?(age, ai)
-    # if age = 16, ai > 40; if age = 17, ai > 70; if age = 18, ai > 100
-    ai >= 10 + (age - 15) * 30
+  def calculate_calculations(player_ai)
+    [
+      player_ai.inject(:+).to_f / player_ai.length, # average
+      player_ai.min, # min
+      player_ai.max # max
+    ]
   end
 end
