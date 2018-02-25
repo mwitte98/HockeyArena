@@ -1,20 +1,10 @@
 <% provide(:title, @title) %>
-<div class="row">
-  <h2 style="float: left"><%= @title %></h2>
-  <div style="float:right; margin-top: 17px">
-    <% if @title.include? 'speedysportwhiz' %>
-      <%= link_to "speedy Live YS", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'ys'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedy Live Draft", ys_path(manager: 'speedysportwhiz', version: 'live', type: 'draft'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedy Beta YS", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'ys'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedy Beta Draft", ys_path(manager: 'speedysportwhiz', version: 'beta', type: 'draft'), {class: "btn btn-md btn-primary"} %>
-    <% else %>
-      <%= link_to "speedo Live YS", ys_path(manager: 'magicspeedo', version: 'live', type: 'ys'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedo Live Draft", ys_path(manager: 'magicspeedo', version: 'live', type: 'draft'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedo Beta YS", ys_path(manager: 'magicspeedo', version: 'beta', type: 'ys'), {class: "btn btn-md btn-primary"} %>
-      <%= link_to "speedo Beta Draft", ys_path(manager: 'magicspeedo', version: 'beta', type: 'draft'), {class: "btn btn-md btn-primary"} %>
-    <% end %>
-  </div>
-</div>
+<%= form_tag('/youth_school', method: 'get', class: 'form-group', style: 'float: left; margin-bottom: 0; padding-right: 15px;') do %>
+  <%= select_tag(:manager, options_for_select([['speedysportwhiz'], ['magicspeedo']], params[:manager]), {class: 'form-control', style: 'display: initial; width: 140px; margin-bottom: 0'}) %>
+  <%= select_tag(:version, options_for_select([['live'], ['beta']], params[:version]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
+  <%= select_tag(:type, options_for_select([['ys'], ['draft']], params[:type]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
+  <%= submit_tag('Go', class: 'btn btn-md btn-primary') %>
+<% end %>
 <table id="youthTable" style="margin-top: 20px">
   <thead>
     <tr>
@@ -51,7 +41,7 @@
             <td class="green"><%= ai %></td>
           <% elsif (player.age == 16 and ai <= 5) or (player.age == 17 and ai <= 31) %>
             <td class="red"><%= ai %></td>
-          <% elsif (player.age == 16 and ai <= 7) or (player.age == 17 and ai <= 33) %>
+          <% elsif (player.age == 16 and ai <= 7) or (player.age == 17 and ai <= 33) or (player.age == 18 and ai <= 62) %>
             <td class="orange"><%= ai %></td>
           <% else %>
             <td><%= ai %></td>

@@ -14,6 +14,6 @@ Rails.application.routes.draw do
   match '/national/:team', to: 'players#show_national_team', via: :get, as: 'national'
   match '/update_info', to: 'players#update_info', via: :get
   match '/delete_all', to: 'players#delete_all', via: :post, as: 'delete_all'
-  match '/:manager/:version/:type', to: 'youth_school#show', via: :get, as: 'ys'
+  match '/youth_school', to: 'youth_school#show', via: :get, as: 'ys'
   match '*path', to: 'static_pages#home', via: :get
 end
