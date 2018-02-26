@@ -3,9 +3,10 @@ class UpdateJob
 
   def initialize
     session = GoogleDrive::Session.from_service_account_key(StringIO.new(ENV['client_secret']))
-    @ws_u20_active = initialize_worksheet session, ENV['U20_20_key'], ENV['U20_20_seasons']
-    @ws_u20_next = initialize_worksheet session, ENV['U20_18_key'], ENV['U20_18_seasons']
-    @ws_sr = initialize_worksheet session, ENV['NT_key'], 'senior'
+    @ws_u20_active = U20Worksheet.new(ws:
+      session.spreadsheet_by_key(ENV['U20_20_key']).worksheets[0])
+    @ws_u20_next = U20Worksheet.new(ws: session.spreadsheet_by_key(ENV['U20_18_key']).worksheets[0])
+    @ws_sr = SrWorksheet.new(ws: session.spreadsheet_by_key(ENV['NT_key']).worksheets[0])
   end
 
   def perform
@@ -29,9 +30,9 @@ class UpdateJob
     end
 
     if version == 'live'
-      update_national_team @ws_u20_active, mgr
-      update_national_team @ws_u20_next, mgr
-      update_national_team @ws_sr, mgr
+      update_national_team @ws_u20_active, mgr, ENV['U20_20_seasons']
+      update_national_team @ws_u20_next, mgr, ENV['U20_18_seasons']
+      update_national_team @ws_sr, mgr, 'senior'
     end
     update_ys mgr, version, false
     update_ys mgr, version, true
@@ -48,20 +49,20 @@ class UpdateJob
     sleep 1
   end
 
-  def update_national_team(ws, mgr)
+  def update_national_team(ws, mgr, team)
     # Update team
     ws.manager = mgr
     (2..ws.ws.num_rows).each do |row_num|
       next unless ws.update_row?(row_num)
       begin
-        update_player(ws, mgr)
+        update_player(ws, mgr, team)
       rescue Nokogiri::XML::XPath::SyntaxError
         redo
       end
     end
   end
 
-  def update_player(ws, mgr)
+  def update_player(ws, mgr, team)
     id = ws.id
 
     # don't update if there's no id
@@ -88,7 +89,7 @@ class UpdateJob
     update_nt_player_stadium ws
 
     # create or update player in db
-    update_nt_player_in_db ws
+    update_nt_player_in_db ws, team
 
     begin
       ws.ws.synchronize # save and reload
@@ -146,10 +147,10 @@ class UpdateJob
     ws.stadium = stadium_training[0] == '0' ? 0 : stadium_training[0..2]
   end
 
-  def update_nt_player_in_db(ws)
+  def update_nt_player_in_db(ws, team)
     player_name = ws.name
     id = ws.id
-    team = ws.team
+    team = team
     player_hash = ws.player_hash
     player_age = ws.age
     quality = ws.quality
@@ -240,9 +241,5 @@ class UpdateJob
     ai_hash[datetime] = player[5]
     ys_player.update(age: player[1], quality: player[2], potential: player[3],
                      talent: player[4], ai: ai_hash, priority: player_priority)
-  end
-
-  def initialize_worksheet(session, key, team)
-    Worksheet.new(ws: session.spreadsheet_by_key(key).worksheets[0], team: team)
   end
 end
