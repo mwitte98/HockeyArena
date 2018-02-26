@@ -19,6 +19,11 @@ gem 'sprockets-rails', require: 'sprockets/railtie'
 gem 'sucker_punch', '2.0.4'
 gem 'uglifier', '4.1.6'
 
+group :development do
+  gem 'debase', '0.2.2'
+  gem 'ruby-debug-ide', '0.6.1'
+end
+
 group :test do
   gem 'minitest-reporters', '1.1.19'
   gem 'rubocop', '0.52.1'
