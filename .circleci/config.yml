@@ -1,0 +1,47 @@
+version: 2
+jobs:
+  build:
+    branches:
+      ignore:
+        - master
+    working_directory: ~/HockeyArena
+    docker:
+      - image: circleci/ruby:2.5-node
+        environment:
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
+          PGHOST: 127.0.0.1
+          PGUSER: HockeyArena
+          RAILS_ENV: test
+          CC_TEST_REPORTER_ID: $CODECLIMATE_REPO_TOKEN
+      - image: circleci/postgres:9.5-alpine
+        environment:
+          POSTGRES_USER: HockeyArena
+          POSTGRES_DB: test_db
+          POSTGRES_PASSWORD: ""
+    steps:
+      - checkout
+
+      - restore_cache:
+        keys:
+          - HockeyArena-{{ checksum "Gemfile.lock" }}
+          - HockeyArena-
+
+      - run: bundle check || bundle install
+
+      - save_cache:
+        key: HockeyArena-{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
+
+      - run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+      - run: chmod +x ./cc-test-reporter
+
+      - run: dockerize -wait tcp://localhost:5432 -timeout 1m
+
+      - run: bin/rails db:schema:load --trace
+
+      - run: ./cc-test-reporter before-build
+      - run: bin/rails test
+      - run: ./cc-test-reporter after-build --exit-code $EXIT_CODE
