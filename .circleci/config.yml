@@ -44,4 +44,4 @@ jobs:
 
       - run: ./cc-test-reporter before-build
       - run: bin/rails test
-      - run: ./cc-test-reporter after-build
+      - run: ./cc-test-reporter after-build --id $CODECLIMATE_REPO_TOKEN
