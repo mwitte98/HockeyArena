@@ -24,16 +24,16 @@ jobs:
       - checkout
 
       - restore_cache:
-        keys:
-          - HockeyArena-{{ checksum "Gemfile.lock" }}
-          - HockeyArena-
+          keys:
+            - HockeyArena-{{ checksum "Gemfile.lock" }}
+            - HockeyArena-
 
       - run: bundle check || bundle install
 
       - save_cache:
-        key: HockeyArena-{{ checksum "Gemfile.lock" }}
-        paths:
-          - vendor/bundle
+          key: HockeyArena-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
 
       - run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
       - run: chmod +x ./cc-test-reporter
