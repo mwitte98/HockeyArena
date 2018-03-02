@@ -44,4 +44,4 @@ jobs:
 
       - run: ./cc-test-reporter before-build
       - run: bin/rails test
-      - run: ./cc-test-reporter after-build --exit-code $EXIT_CODE
+      - run: ./cc-test-reporter after-build
