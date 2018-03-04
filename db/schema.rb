@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -16,41 +15,40 @@ ActiveRecord::Schema.define(version: 20150802020853) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "players", force: :cascade do |t|
-    t.integer  "playerid"
-    t.string   "name"
-    t.integer  "age"
-    t.integer  "quality"
-    t.string   "potential"
+  create_table "players", id: :serial, force: :cascade do |t|
+    t.integer "playerid"
+    t.string "name", limit: 255
+    t.integer "age"
+    t.integer "quality"
+    t.string "potential", limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "team"
-    t.json     "daily"
+    t.string "team"
+    t.json "daily"
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string   "name"
-    t.string   "email"
-    t.string   "password_digest"
-    t.string   "remember_token"
+  create_table "users", id: :serial, force: :cascade do |t|
+    t.string "name", limit: 255
+    t.string "email", limit: 255
+    t.string "password_digest", limit: 255
+    t.string "remember_token", limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["remember_token"], name: "index_users_on_remember_token"
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
-  add_index "users", ["remember_token"], name: "index_users_on_remember_token", using: :btree
-
-  create_table "youth_schools", force: :cascade do |t|
-    t.string   "name"
-    t.integer  "age"
-    t.string   "quality"
-    t.string   "potential"
-    t.string   "talent"
-    t.json     "ai"
-    t.integer  "priority"
-    t.string   "manager"
-    t.string   "version"
-    t.boolean  "draft"
+  create_table "youth_schools", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.integer "age"
+    t.string "quality"
+    t.string "potential"
+    t.string "talent"
+    t.json "ai"
+    t.integer "priority"
+    t.string "manager"
+    t.string "version"
+    t.boolean "draft"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

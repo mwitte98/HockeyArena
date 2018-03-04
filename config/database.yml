@@ -3,19 +3,19 @@
 # Do not set this db to the same as development or production.
 development:
   adapter: postgresql
-  database: db/development_db
+  database: db/hockey_arena_development_db
   host: localhost
   pool: 5
   timeout: 5000
 
 test:
   adapter: postgresql
-  database: db/test_db
+  database: db/hockey_arena_test_db
   pool: 5
   timeout: 5000
 
 production:
   adapter: postgresql
-  database: db/production_db
+  database: db/hockey_arena_production_db
   pool: 5
   timeout: 5000
