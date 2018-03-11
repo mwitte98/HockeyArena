@@ -5,12 +5,13 @@ class Worksheet
   def initialize(params = {})
     @ws = params[:ws]
     @team = params[:team]
-    @is_senior_team = @team == 'senior'
   end
 
   def update_row?(row_num)
     @row = row_num
-    if @manager == 'speedysportwhiz'
+    if id == ''
+      false
+    elsif @manager == 'speedysportwhiz'
       update_row_for_speedy?
     else
       update_row_for_speedo?
@@ -60,16 +61,18 @@ class Worksheet
 
   def update_row_for_speedy?
     is_y = ws[@row, 30] == 'y'
-    (!@is_senior_team && !is_y) || (@is_senior_team && is_y)
+    is_senior_team = @team == 'senior'
+    (!is_senior_team && !is_y) || (is_senior_team && is_y)
   end
 
   def update_row_for_speedo?
     is_y = ws[@row, 30] == 'y'
-    (!@is_senior_team && is_y) || (@is_senior_team && !is_y)
+    is_senior_team = @team == 'senior'
+    (!is_senior_team && is_y) || (is_senior_team && !is_y)
   end
 
   def update_stats(player)
-    @ws[@row, 2] = player.age if @is_senior_team
+    @ws[@row, 2] = player.age if @team == 'senior'
     @ws[@row, 3] = player.ai
     @ws[@row, 22] = player.games
     @ws[@row, 23] = player.minutes

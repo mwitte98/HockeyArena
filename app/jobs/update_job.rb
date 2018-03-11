@@ -62,13 +62,8 @@ class UpdateJob
   end
 
   def update_player(sheet, mgr)
-    id = sheet.id
-
-    # don't update if there's no id
-    return if id == ''
-
     # mark player as deleted if he doesn't exist anymore
-    @agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
+    @agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{sheet.id}")
     page = @agent.page
     if page.content.include? 'Player does not exist or has retired !'
       sheet.mark_player_as_deleted
