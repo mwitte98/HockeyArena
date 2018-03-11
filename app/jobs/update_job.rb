@@ -3,10 +3,9 @@ class UpdateJob
 
   def initialize
     session = GoogleDrive::Session.from_service_account_key(StringIO.new(ENV['client_secret']))
-    @ws_u20_active = U20Worksheet.new(ws:
-      session.spreadsheet_by_key(ENV['U20_20_key']).worksheets[0])
-    @ws_u20_next = U20Worksheet.new(ws: session.spreadsheet_by_key(ENV['U20_18_key']).worksheets[0])
-    @ws_sr = SrWorksheet.new(ws: session.spreadsheet_by_key(ENV['NT_key']).worksheets[0])
+    @ws_u20_active = initialize_worksheet session, ENV['U20_20_key'], ENV['U20_20_seasons']
+    @ws_u20_next = initialize_worksheet session, ENV['U20_18_key'], ENV['U20_18_seasons']
+    @ws_sr = initialize_worksheet session, ENV['NT_key'], 'senior'
   end
 
   def perform
@@ -30,9 +29,9 @@ class UpdateJob
     end
 
     if version == 'live'
-      update_national_team @ws_u20_active, mgr, ENV['U20_20_seasons']
-      update_national_team @ws_u20_next, mgr, ENV['U20_18_seasons']
-      update_national_team @ws_sr, mgr, 'senior'
+      update_national_team @ws_u20_active, mgr
+      update_national_team @ws_u20_next, mgr
+      update_national_team @ws_sr, mgr
     end
     update_ys mgr, version, false
     update_ys mgr, version, true
@@ -49,21 +48,21 @@ class UpdateJob
     sleep 1
   end
 
-  def update_national_team(ws, mgr, team)
+  def update_national_team(sheet, mgr)
     # Update team
-    ws.manager = mgr
-    (2..ws.ws.num_rows).each do |row_num|
-      next unless ws.update_row?(row_num)
+    sheet.manager = mgr
+    (2..sheet.ws.num_rows).each do |row_num|
+      next unless sheet.update_row?(row_num)
       begin
-        update_player(ws, mgr, team)
+        update_player(sheet, mgr)
       rescue Nokogiri::XML::XPath::SyntaxError
         redo
       end
     end
   end
 
-  def update_player(ws, mgr, team)
-    id = ws.id
+  def update_player(sheet, mgr)
+    id = sheet.id
 
     # don't update if there's no id
     return if id == ''
@@ -72,12 +71,12 @@ class UpdateJob
     @agent.get("http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=#{id}")
     page = @agent.page
     if page.content.include? 'Player does not exist or has retired !'
-      ws.mark_player_as_deleted
+      sheet.mark_player_as_deleted
       return
     end
 
     # update player attributes and click on team name link
-    update_nt_player_attributes ws, mgr
+    update_nt_player_attributes sheet, mgr
 
     # go to player's team's stadium page
     team_id = @agent.current_page.uri.to_s[77..-1]
@@ -86,13 +85,13 @@ class UpdateJob
     )
 
     # update player's team stadium
-    update_nt_player_stadium ws
+    update_nt_player_stadium sheet
 
     # create or update player in db
-    update_nt_player_in_db ws, team
+    update_nt_player_in_db sheet
 
     begin
-      ws.ws.synchronize # save and reload
+      sheet.ws.synchronize # save and reload
     rescue GoogleDrive::Error
       puts "**********GOOGLE DRIVE ERROR SYNCING: #{ws.name}**********"
     end
@@ -125,36 +124,36 @@ class UpdateJob
     update_ys_player_in_db params
   end
 
-  def update_nt_player_attributes(ws, mgr)
+  def update_nt_player_attributes(sheet, mgr)
     page = @agent.page
     player_attributes = []
     page.search('.q1, .q').each { |player_attribute| player_attributes << player_attribute.text }
     player_attributes[3] = mgr
     player = NtPlayer.new(player_attributes)
 
-    ws.update_row player
+    sheet.update_row player
 
     player_team = player_attributes[5]
     page.link_with(text: player_team).click
   end
 
-  def update_nt_player_stadium(ws)
+  def update_nt_player_stadium(sheet)
     stadium_attributes = []
     @agent.page.search('.sr1 .yspscores').each { |area| stadium_attributes << area.text.strip }
 
     # stadium training
     stadium_training = stadium_attributes[3]
-    ws.stadium = stadium_training[0] == '0' ? 0 : stadium_training[0..2]
+    sheet.stadium = stadium_training[0] == '0' ? 0 : stadium_training[0..2]
   end
 
-  def update_nt_player_in_db(ws, team)
-    player_name = ws.name
-    id = ws.id
-    team = team
-    player_hash = ws.player_hash
-    player_age = ws.age
-    quality = ws.quality
-    potential = ws.potential
+  def update_nt_player_in_db(sheet)
+    player_name = sheet.name
+    id = sheet.id
+    team = sheet.team
+    player_hash = sheet.player_hash
+    player_age = sheet.age
+    quality = sheet.quality
+    potential = sheet.potential
     nt_player = Player.find_by(name: player_name, team: team)
     datetime = Time.now.in_time_zone('Eastern Time (US & Canada)')
     if nt_player.nil?
@@ -241,5 +240,9 @@ class UpdateJob
     ai_hash[datetime] = player[5]
     ys_player.update(age: player[1], quality: player[2], potential: player[3],
                      talent: player[4], ai: ai_hash, priority: player_priority)
+  end
+
+  def initialize_worksheet(session, key, team)
+    Worksheet.new(ws: session.spreadsheet_by_key(key).worksheets[0], team: team)
   end
 end

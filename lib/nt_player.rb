@@ -1,5 +1,6 @@
 class NtPlayer
   attr_reader :player_attributes
+  attr_reader :is_scouted
 
   def initialize(player_attributes)
     @player_attributes = player_attributes
