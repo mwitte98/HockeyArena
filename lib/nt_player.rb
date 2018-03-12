@@ -1,12 +1,13 @@
 class NtPlayer
   attr_reader :player_attributes
+  attr_reader :is_scouted
 
   def initialize(player_attributes)
     @player_attributes = player_attributes
-    mgr = player_attributes[3]
     player_team = player_attributes[5]
-    @is_on_team = (mgr == 'speedysportwhiz' && player_team == 'RIT Tigers') ||
-                  (mgr == 'magicspeedo' && player_team == 'McDeedo Punch')
+    manager = WsState.manager
+    @is_on_team = (manager == 'speedysportwhiz' && player_team == 'RIT Tigers') ||
+                  (manager == 'magicspeedo' && player_team == 'McDeedo Punch')
     @is_scouted = player_attributes.size > 35
   end
 
