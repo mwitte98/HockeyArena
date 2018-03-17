@@ -2,15 +2,13 @@ class YouthSchoolController < ApplicationController
   before_action :signed_in_user
 
   def show
-    manager = params[:manager]
-    version = params[:version]
-    type = params[:type]
-    is_draft = type == 'draft'
-    @title = "#{manager} #{version.capitalize} "
-    @title += is_draft ? type.capitalize : type.upcase
-    @players = YouthSchool.where(manager: manager, version: version, draft: is_draft)
-                          .order('priority ASC')
-    @dates, @ai_array, @calculations = prepare_tables(@players)
+    set_players
+    if @players.empty?
+      @dates, @ai_array, @calculations = []
+    else
+      format_dates @players.last.ai.keys
+      prepare_tables
+    end
   end
 
   private
@@ -21,32 +19,33 @@ class YouthSchoolController < ApplicationController
     redirect_to root_url
   end
 
-  def prepare_tables(players)
-    return [], [], [] if players.empty?
-    dates = format_dates players.last
-    ai_array = []
-    calculations = []
-    players.each do |player|
-      player_ai = []
-      ai_hash = player.ai
-      ai_hash.keys.sort.each { |key| player_ai << ai_hash[key].to_i }
-      ai_array << player_ai
-      calculations << calculate_calculations(player_ai)
-    end
-    [dates, ai_array, calculations]
+  def set_players
+    @players = YouthSchool.where(manager: params[:manager], version: params[:version],
+                                 draft: params[:type] == 'draft').order('priority ASC')
   end
 
-  def format_dates(player)
-    dates = []
-    player.ai.keys.sort.each do |key|
-      time = key.to_time.getgm + 1.days
-      dates << "#{time.day}.#{time.month}"
+  def prepare_tables
+    @ai_array = []
+    @calculations = []
+    @players.each do |player|
+      player_ai = []
+      ai_hash = player.ai
+      ai_hash.each_key { |key| player_ai << ai_hash[key].to_i }
+      @ai_array << player_ai
+      calculate_calculations(player_ai)
     end
-    dates
+  end
+
+  def format_dates(dates)
+    @dates = []
+    dates.sort.each do |key|
+      time = key.to_time.getgm + 1.days
+      @dates << "#{time.day}.#{time.month}"
+    end
   end
 
   def calculate_calculations(player_ai)
-    [
+    @calculations << [
       player_ai.inject(:+).to_f / player_ai.length, # average
       player_ai.min, # min
       player_ai.max # max
