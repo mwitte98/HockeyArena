@@ -8,14 +8,14 @@ module WsRow
     @row = WsState.row
     update_stats player
     return unless player.is_scouted
-    hash = {
-      goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
-      selfcontrol: 15, experience: 17
-    }
+    hash = { goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
+             selfcontrol: 15, experience: 17 }
     update_attrs player, hash
   end
 
   def self.player_hash
+    @sheet = WsState.sheet
+    @row = WsState.row
     hash = {
       ai: 3, stadium: 6, goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13,
       strength: 14, selfcontrol: 15, playertype: 16, experience: 17, games: 22, minutes: 23
@@ -56,20 +56,16 @@ module WsRow
   end
 
   private_class_method def self.update_attrs(player, hash)
-    sheet = WsState.sheet
-    row = WsState.row
     attributes = player.attributes
     hash.each_key do |key|
-      sheet[row, hash[key]] = attributes[key]
+      @sheet[@row, hash[key]] = attributes[key]
     end
   end
 
   private_class_method def self.generate_player_hash(hash)
-    sheet = WsState.sheet
-    row = WsState.row
     generated_hash = {}
     hash.each_key do |key|
-      value = sheet[row, hash[key]]
+      value = @sheet[@row, hash[key]]
       generated_hash[key] = key == :playertype ? value : value.to_i
     end
     generated_hash

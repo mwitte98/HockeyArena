@@ -20,10 +20,8 @@ class NtPlayer
   end
 
   def attributes
-    hash = {
-      goalie: 16, defense: 18, offense: 20, shooting: 22, passing: 24, speed: 17, strength: 19,
-      selfcontrol: 21, experience: 25
-    }
+    hash = { goalie: 16, defense: 18, offense: 20, shooting: 22, passing: 24, speed: 17,
+             strength: 19, selfcontrol: 21, experience: 25 }
 
     attr_hash = {}
     hash.each_key do |key|
