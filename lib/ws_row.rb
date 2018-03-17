@@ -8,14 +8,20 @@ module WsRow
     @row = WsState.row
     update_stats player
     return unless player.is_scouted
-    update_primary_attrs player
-    update_secondary_attrs player
+    hash = { goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
+             selfcontrol: 15, experience: 17 }
+    update_attrs player, hash
   end
 
   def self.player_hash
     @sheet = WsState.sheet
     @row = WsState.row
-    stats_hash.merge(primary_attrs_hash).merge(secondary_attrs_hash)
+    hash = {
+      ai: 3, stadium: 6, goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13,
+      strength: 14, selfcontrol: 15, playertype: 16, experience: 17, games: 22, minutes: 23
+    }
+
+    generate_player_hash hash
   end
 
   def self.name
@@ -43,53 +49,25 @@ module WsRow
   end
 
   private_class_method def self.update_stats(player)
-    @sheet[@row, 2] = player.age if WsState.team == 'senior'
+    @sheet[@row, 2] = player.age
     @sheet[@row, 3] = player.ai
     @sheet[@row, 22] = player.games
     @sheet[@row, 23] = player.minutes
   end
 
-  private_class_method def self.update_primary_attrs(player)
-    @sheet[@row, 8] = player.goalie
-    @sheet[@row, 9] = player.defense
-    @sheet[@row, 10] = player.offense
-    @sheet[@row, 11] = player.shooting
+  private_class_method def self.update_attrs(player, hash)
+    attributes = player.attributes
+    hash.each_key do |key|
+      @sheet[@row, hash[key]] = attributes[key]
+    end
   end
 
-  private_class_method def self.update_secondary_attrs(player)
-    @sheet[@row, 12] = player.passing
-    @sheet[@row, 13] = player.speed
-    @sheet[@row, 14] = player.strength
-    @sheet[@row, 15] = player.selfcontrol
-    @sheet[@row, 17] = player.experience
-  end
-
-  private_class_method def self.stats_hash
-    {
-      ai: @sheet[@row, 3].to_i,
-      stadium: @sheet[@row, 6].to_i,
-      playertype: @sheet[@row, 16],
-      games: @sheet[@row, 22].to_i,
-      minutes: @sheet[@row, 23].to_i
-    }
-  end
-
-  private_class_method def self.primary_attrs_hash
-    {
-      goalie: @sheet[@row, 8].to_i,
-      defense: @sheet[@row, 9].to_i,
-      offense: @sheet[@row, 10].to_i,
-      shooting: @sheet[@row, 11].to_i
-    }
-  end
-
-  private_class_method def self.secondary_attrs_hash
-    {
-      passing: @sheet[@row, 12].to_i,
-      speed: @sheet[@row, 13].to_i,
-      strength: @sheet[@row, 14].to_i,
-      selfcontrol: @sheet[@row, 15].to_i,
-      experience: @sheet[@row, 17].to_i
-    }
+  private_class_method def self.generate_player_hash(hash)
+    generated_hash = {}
+    hash.each_key do |key|
+      value = @sheet[@row, hash[key]]
+      generated_hash[key] = key == :playertype ? value : value.to_i
+    end
+    generated_hash
   end
 end
