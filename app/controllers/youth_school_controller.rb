@@ -3,12 +3,12 @@ class YouthSchoolController < ApplicationController
 
   def show
     set_players
-    if @players.empty?
-      @dates, @ai_array, @calculations = []
-    else
-      format_dates @players.last.ai.keys
-      prepare_tables
-    end
+    @dates = []
+    @ai_array = []
+    @calculations = []
+    return if @players.empty?
+    format_dates @players.last.ai.keys
+    prepare_tables
   end
 
   private
@@ -25,8 +25,6 @@ class YouthSchoolController < ApplicationController
   end
 
   def prepare_tables
-    @ai_array = []
-    @calculations = []
     @players.each do |player|
       player_ai = []
       ai_hash = player.ai
@@ -37,7 +35,6 @@ class YouthSchoolController < ApplicationController
   end
 
   def format_dates(dates)
-    @dates = []
     dates.sort.each do |key|
       time = key.to_time.getgm + 1.days
       @dates << "#{time.day}.#{time.month}"
