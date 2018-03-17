@@ -17,8 +17,8 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">National <b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><%= link_to "U20: Active", national_path(team: 'u20_active') %></li>
-              <li><%= link_to "U20: Next", national_path(team: 'u20_next') %></li>
+              <li><%= link_to "U20: Active", national_path(team: ENV['U20_20_seasons']) %></li>
+              <li><%= link_to "U20: Next", national_path(team: ENV['U20_18_seasons']) %></li>
               <li><%= link_to "Senior", national_path(team: 'senior') %></li>
             </ul>
           </li>
