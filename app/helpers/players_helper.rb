@@ -7,9 +7,12 @@ module PlayersHelper
   end
 
   def calculate_ai(player)
-    goalie = player['goalie']
-    return 0 if goalie.nil?
-    goalie + player['defense'] + player['offense'] + player['shooting'] +
-      player['passing'] + player['speed'] + player['strength'] + player['selfcontrol']
+    total = 0
+    attributes = %w[goalie defense offense shooting passing speed strength selfcontrol]
+    attributes.each do |attribute|
+      value = player[attribute]
+      total += value unless value.nil?
+    end
+    total
   end
 end
