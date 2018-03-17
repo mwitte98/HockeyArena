@@ -8,23 +8,20 @@ module WsRow
     @row = WsState.row
     update_stats player
     return unless player.is_scouted
-    update_primary_attrs player
-    update_secondary_attrs player
+    hash = {
+      goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
+      selfcontrol: 15, experience: 17
+    }
+    update_attrs player, hash
   end
 
   def self.player_hash
-    sheet = WsState.sheet
-    row = WsState.row
     hash = {
       ai: 3, stadium: 6, goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13,
       strength: 14, selfcontrol: 15, playertype: 16, experience: 17, games: 22, minutes: 23
     }
 
-    generated_hash = {}
-    hash.each_key do |key|
-      value = sheet[row, hash[key]]
-      generated_hash[key] = key == :playertype ? value : value.to_i
-    end
+    generate_player_hash hash
   end
 
   def self.name
@@ -52,24 +49,29 @@ module WsRow
   end
 
   private_class_method def self.update_stats(player)
-    @sheet[@row, 2] = player.age if WsState.team == 'senior'
+    @sheet[@row, 2] = player.age
     @sheet[@row, 3] = player.ai
     @sheet[@row, 22] = player.games
     @sheet[@row, 23] = player.minutes
   end
 
-  private_class_method def self.update_primary_attrs(player)
-    @sheet[@row, 8] = player.goalie
-    @sheet[@row, 9] = player.defense
-    @sheet[@row, 10] = player.offense
-    @sheet[@row, 11] = player.shooting
+  private_class_method def self.update_attrs(player, hash)
+    sheet = WsState.sheet
+    row = WsState.row
+    attributes = player.attributes
+    hash.each_key do |key|
+      sheet[row, hash[key]] = attributes[key]
+    end
   end
 
-  private_class_method def self.update_secondary_attrs(player)
-    @sheet[@row, 12] = player.passing
-    @sheet[@row, 13] = player.speed
-    @sheet[@row, 14] = player.strength
-    @sheet[@row, 15] = player.selfcontrol
-    @sheet[@row, 17] = player.experience
+  private_class_method def self.generate_player_hash(hash)
+    sheet = WsState.sheet
+    row = WsState.row
+    generated_hash = {}
+    hash.each_key do |key|
+      value = sheet[row, hash[key]]
+      generated_hash[key] = key == :playertype ? value : value.to_i
+    end
+    generated_hash
   end
 end

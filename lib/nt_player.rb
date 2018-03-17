@@ -19,40 +19,17 @@ class NtPlayer
     @player_attributes[2]
   end
 
-  def goalie
-    return_attribute @player_attributes[16]
-  end
+  def attributes
+    hash = {
+      goalie: 16, defense: 18, offense: 20, shooting: 22, passing: 24, speed: 17, strength: 19,
+      selfcontrol: 21, experience: 25
+    }
 
-  def defense
-    return_attribute @player_attributes[18]
-  end
-
-  def offense
-    return_attribute @player_attributes[20]
-  end
-
-  def shooting
-    return_attribute @player_attributes[22]
-  end
-
-  def passing
-    return_attribute @player_attributes[24]
-  end
-
-  def speed
-    return_attribute @player_attributes[17]
-  end
-
-  def strength
-    return_attribute @player_attributes[19]
-  end
-
-  def selfcontrol
-    return_attribute @player_attributes[21]
-  end
-
-  def experience
-    return_attribute @player_attributes[25]
+    attr_hash = {}
+    hash.each_key do |key|
+      attr_hash[key] = return_attribute @player_attributes[hash[key]]
+    end
+    attr_hash
   end
 
   def games
@@ -76,7 +53,7 @@ class NtPlayer
   def return_stat(offset)
     if @is_scouted && @is_on_team
       player_attributes[34 + offset]
-    elsif @is_scouted && !@is_on_team
+    elsif @is_scouted
       player_attributes[31 + offset]
     else
       player_attributes[19 + offset]
