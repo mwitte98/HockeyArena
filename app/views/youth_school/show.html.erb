@@ -1,4 +1,4 @@
-<% provide(:title, @title) %>
+<% provide(:title, 'YS/Draft') %>
 <%= form_tag('/youth_school', method: 'get', class: 'form-group', style: 'float: left; margin-bottom: 0; padding-right: 15px;') do %>
   <%= select_tag(:manager, options_for_select([['speedysportwhiz'], ['magicspeedo']], params[:manager]), {class: 'form-control', style: 'display: initial; width: 140px; margin-bottom: 0'}) %>
   <%= select_tag(:version, options_for_select([['live'], ['beta']], params[:version]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
