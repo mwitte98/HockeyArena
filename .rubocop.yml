@@ -11,11 +11,14 @@ AllCops:
     - 'config/unicorn.rb'
   TargetRubyVersion: 2.5
 
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: false
+
 Metrics/LineLength:
   Max: 100
 
 Metrics/AbcSize:
-  Max: 10
+  Max: 15
 
 Style/Documentation:
   Enabled: false

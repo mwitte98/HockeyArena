@@ -2,12 +2,11 @@ class YouthSchoolController < ApplicationController
   before_action :signed_in_user
 
   def show
-    set_players
+    @players = players.sort_by { |player| player.ai.length }
     @dates = []
     @ai_array = []
     @calculations = []
-    return if @players.empty?
-    format_dates @players.last.ai.keys
+    format_dates @players.last&.ai&.keys || []
     prepare_tables
   end
 
@@ -19,25 +18,24 @@ class YouthSchoolController < ApplicationController
     redirect_to root_url
   end
 
-  def set_players
-    @players = YouthSchool.where(manager: params[:manager], version: params[:version],
-                                 draft: params[:type] == 'draft').order('priority ASC')
-  end
-
-  def prepare_tables
-    @players.each do |player|
-      player_ai = []
-      ai_hash = player.ai
-      ai_hash.each_key { |key| player_ai << ai_hash[key].to_i }
-      @ai_array << player_ai
-      calculate_calculations(player_ai)
-    end
+  def players
+    YouthSchool.where(
+      manager: params[:manager], version: params[:version], draft: params[:type] == 'draft'
+    )
   end
 
   def format_dates(dates)
     dates.sort.each do |key|
       time = key.to_time.getgm + 1.days
       @dates << "#{time.day}.#{time.month}"
+    end
+  end
+
+  def prepare_tables
+    @players.each do |player|
+      player_ai = player.ai.map { |_key, value| value.to_i }
+      @ai_array << player_ai
+      calculate_calculations(player_ai)
     end
   end
 

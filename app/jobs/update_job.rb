@@ -20,37 +20,47 @@ class UpdateJob
   def update(manager, version)
     State.manager = manager
     State.version = version
-    @agent = Mechanize.new
+    go_to_homepage
     login_to_ha
-
-    page = @agent.page
-    if page.content.include?('Continue')
-      puts "*****Login #{login_attempt} to HA failed for #{manager} #{version}*****"
-      page.search('#page').each { |info| puts info.text }
-      return
-    end
-
+    return if login_failed?
     run_updates
   end
 
-  def run_updates
-    if version == 'live'
-      UpdateNT.run @ws_u20_active, ENV['U20_20_seasons']
-      UpdateNT.run @ws_u20_next, ENV['U20_18_seasons']
-      UpdateNT.run @ws_sr, 'senior'
+  def go_to_homepage
+    @agent = Mechanize.new
+    if State.version == 'live'
+      @agent.get('http://www.hockeyarena.net/en/')
+    else
+      @agent.get('http://beta.hockeyarena.net/en/')
     end
-    UpdateYS.run false # update ys
-    UpdateYS.run true # update draft
   end
 
   def login_to_ha
-    is_version_live = State.version == 'live'
-    @agent.get(is_version_live ? 'http://www.hockeyarena.net/en/' : 'http://beta.hockeyarena.net/en/')
     form = @agent.page.forms.first
     form.nick = State.manager
-    form.password = is_version_live ? ENV['HA_password'] : ENV['beta_password']
+    form.password = State.version == 'live' ? ENV['HA_password'] : ENV['beta_password']
     form.submit
+  end
+
+  def login_failed?
     sleep 1
+    content = @agent.page.content
+    if content.include?('Continue')
+      puts "*****Login to HA failed for #{State.manager} #{State.version}*****"
+      puts content
+      return true
+    end
+    false
+  end
+
+  def run_updates
+    if State.version == 'live'
+      UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
+      UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
+      UpdateNT.run @agent, @ws_sr, 'senior'
+    end
+    UpdateYS.run @agent, false # update ys
+    UpdateYS.run @agent, true # update draft
   end
 
   def get_first_worksheet(session, key)
