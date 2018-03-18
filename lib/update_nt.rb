@@ -1,5 +1,5 @@
 module UpdateNT
-  class << self
+  class << UpdateNT
     def run(sheet, team)
       State.sheet = sheet
       State.team = team

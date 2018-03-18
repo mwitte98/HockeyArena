@@ -1,5 +1,5 @@
 module State
-  class << self
+  class << State
     attr_accessor :sheet, :team, :row, :manager, :version, :is_draft
 
     def update_row?(row_num)

@@ -1,5 +1,5 @@
 module UpdateYS
-  class << self
+  class << UpdateYS
     def run(is_draft)
       @is_draft = is_draft
       update_ys
