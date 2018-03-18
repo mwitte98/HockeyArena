@@ -1,11 +1,11 @@
 module WsRow
   def self.mark_player_as_deleted
-    (2..27).each { |column| WsState.sheet[WsState.row, column] = 'DELETE' }
+    (2..27).each { |column| State.sheet[State.row, column] = 'DELETE' }
   end
 
   def self.update_row(player)
-    @sheet = WsState.sheet
-    @row = WsState.row
+    @sheet = State.sheet
+    @row = State.row
     update_stats player
     return unless player.is_scouted
     hash = { goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
@@ -14,8 +14,8 @@ module WsRow
   end
 
   def self.player_hash
-    @sheet = WsState.sheet
-    @row = WsState.row
+    @sheet = State.sheet
+    @row = State.row
     hash = {
       ai: 3, stadium: 6, goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13,
       strength: 14, selfcontrol: 15, playertype: 16, experience: 17, games: 22, minutes: 23
@@ -25,27 +25,27 @@ module WsRow
   end
 
   def self.name
-    WsState.sheet[WsState.row, 1]
+    State.sheet[State.row, 1]
   end
 
   def self.age
-    WsState.sheet[WsState.row, 2]
+    State.sheet[State.row, 2]
   end
 
   def self.quality
-    WsState.sheet[WsState.row, 4]
+    State.sheet[State.row, 4]
   end
 
   def self.potential
-    WsState.sheet[WsState.row, 5]
+    State.sheet[State.row, 5]
   end
 
   def self.stadium=(value)
-    WsState.sheet[WsState.row, 6] = value
+    State.sheet[State.row, 6] = value
   end
 
   def self.id
-    WsState.sheet[WsState.row, 28]
+    State.sheet[State.row, 28]
   end
 
   private_class_method def self.update_stats(player)

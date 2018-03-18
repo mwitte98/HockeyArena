@@ -5,7 +5,7 @@ class NtPlayer
   def initialize(player_attributes)
     @player_attributes = player_attributes
     player_team = player_attributes[5]
-    manager = WsState.manager
+    manager = State.manager
     @is_on_team = (manager == 'speedysportwhiz' && player_team == 'RIT Tigers') ||
                   (manager == 'magicspeedo' && player_team == 'McDeedo Punch')
     @is_scouted = player_attributes.size > 35
