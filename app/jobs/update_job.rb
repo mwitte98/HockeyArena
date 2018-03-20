@@ -9,30 +9,41 @@ class UpdateJob
   end
 
   def perform
-    update 'speedysportwhiz', 'live'
-    update 'magicspeedo', 'live'
-    update 'speedysportwhiz', 'beta'
-    update 'magicspeedo', 'beta'
+    update 'speedysportwhiz', 'live', 'a'
+    update 'speedysportwhiz', 'live', 'b'
+    update 'magicspeedo', 'live', 'a'
+    update 'magicspeedo', 'live', 'b'
+    update 'speedysportwhiz', 'beta', 'a'
+    update 'speedysportwhiz', 'beta', 'b'
+    update 'magicspeedo', 'beta', 'a'
+    update 'magicspeedo', 'beta', 'b'
   end
 
   private
 
-  def update(manager, version)
+  def update(manager, version, team)
     State.manager = manager
     State.version = version
-    go_to_homepage
-    login_to_ha
-    return if login_failed?
-    run_updates
+    if team == 'a'
+      go_to_homepage
+      return if login_failed?
+    else
+      switch_teams
+    end
+    run_updates team
   end
 
   def go_to_homepage
     @agent = Mechanize.new
-    if State.version == 'live'
-      @agent.get('http://www.hockeyarena.net/en/')
-    else
-      @agent.get('http://beta.hockeyarena.net/en/')
-    end
+    prefix = State.version == 'live' ? 'www' : 'beta'
+    @agent.get('http://' + prefix + '.hockeyarena.net/en/')
+    login_to_ha
+  end
+
+  def switch_teams
+    prefix = State.version == 'live' ? 'www' : 'beta'
+    @agent.get(
+      'http://' + prefix + '.hockeyarena.net/en/index.php&p=sponsor_multiteam.inc&a=switch&team=2')
   end
 
   def login_to_ha
@@ -53,14 +64,13 @@ class UpdateJob
     false
   end
 
-  def run_updates
-    if State.version == 'live'
+  def run_updates(team)
+    if State.version == 'live' && team == 'a'
       UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
       UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
       UpdateNT.run @agent, @ws_sr, 'senior'
     end
-    UpdateYS.run @agent, false # update ys
-    UpdateYS.run @agent, true # update draft
+    UpdateYS.run @agent, team
   end
 
   def get_first_worksheet(session, key)
