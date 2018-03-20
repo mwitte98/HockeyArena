@@ -26,7 +26,6 @@ class UpdateJob
     State.version = version
     if team == 'a'
       go_to_homepage
-      login_to_ha
       return if login_failed?
     else
       switch_teams
@@ -38,6 +37,7 @@ class UpdateJob
     @agent = Mechanize.new
     prefix = State.version == 'live' ? 'www' : 'beta'
     @agent.get('http://' + prefix + '.hockeyarena.net/en/')
+    login_to_ha
   end
 
   def switch_teams
