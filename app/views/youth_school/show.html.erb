@@ -3,6 +3,7 @@
   <%= select_tag(:manager, options_for_select([['speedysportwhiz'], ['magicspeedo']], params[:manager]), {class: 'form-control', style: 'display: initial; width: 140px; margin-bottom: 0'}) %>
   <%= select_tag(:version, options_for_select([['live'], ['beta']], params[:version]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
   <%= select_tag(:type, options_for_select([['ys'], ['draft']], params[:type]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
+  <%= select_tag(:team, options_for_select([['a'], ['b']], params[:team]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
   <%= submit_tag('Go', class: 'btn btn-md btn-primary') %>
 <% end %>
 <table id="youthTable" style="margin-top: 20px">

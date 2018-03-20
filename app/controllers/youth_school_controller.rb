@@ -20,7 +20,8 @@ class YouthSchoolController < ApplicationController
 
   def players
     YouthSchool.where(
-      manager: params[:manager], version: params[:version], draft: params[:type] == 'draft'
+      manager: params[:manager], version: params[:version], draft: params[:type] == 'draft',
+      team: params[:team]
     )
   end
 

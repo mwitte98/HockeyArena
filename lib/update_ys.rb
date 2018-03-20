@@ -1,10 +1,11 @@
 module UpdateYS
   class << UpdateYS
-    def run(agent, is_draft)
+    def run(agent, team)
       @agent = agent
-      @is_draft = is_draft
+      @team = team
       go_to_ys_page
-      update_ys
+      update_ys false # update ys
+      update_ys true # update draft
     end
 
     private
@@ -17,7 +18,8 @@ module UpdateYS
       end
     end
 
-    def update_ys
+    def update_ys(is_draft)
+      @is_draft = is_draft
       # don't update if draft and draft has happened
       return if @is_draft && @agent.page.search('#table-2 .thead td').size > 8
 
@@ -53,7 +55,7 @@ module UpdateYS
 
     def find_ys_player_names
       YouthSchool.where(
-        manager: State.manager, version: State.version, draft: @is_draft
+        manager: State.manager, version: State.version, draft: @is_draft, team: @team
       ).pluck(:name)
     end
 
@@ -71,14 +73,14 @@ module UpdateYS
 
     def find_ys_player(name)
       YouthSchool.find_by(
-        name: name, manager: State.manager, version: State.version, draft: @is_draft)
+        name: name, manager: State.manager, version: State.version, draft: @is_draft, team: @team)
     end
 
     def create_ys_player(player, datetime)
       YouthSchool.create!(
         name: player[0], age: player[1], quality: player[2], potential: player[3],
         talent: player[4], ai: { datetime => player[5] },
-        manager: State.manager, version: State.version, draft: @is_draft)
+        manager: State.manager, version: State.version, draft: @is_draft, team: @team)
     end
 
     def update_ys_player(player, ys_player, datetime)
