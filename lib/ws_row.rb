@@ -8,6 +8,7 @@ module WsRow
     @row = State.row
     update_stats player
     return unless player.is_scouted
+
     hash = { goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13, strength: 14,
              selfcontrol: 15, experience: 17 }
     update_attrs player, hash

@@ -45,6 +45,7 @@ class NtPlayer
     return value[0] if value[2] == '('
     return value[0..1] if value[3] == '('
     return value[0..2] if value[4] == '('
+
     value
   end
 

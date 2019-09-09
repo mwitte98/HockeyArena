@@ -26,7 +26,6 @@ gem 'sucker_punch', '2.1.2'
 gem 'uglifier', '4.1.20'
 
 group :development do
-  gem 'listen'
   gem 'debase', '0.2.4'
   gem 'rubocop', '0.74.0'
   gem 'ruby-debug-ide', '0.7.0'
