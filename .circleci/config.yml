@@ -1,12 +1,9 @@
 version: 2
 jobs:
   build:
-    branches:
-      ignore:
-        - master
     working_directory: ~/HockeyArena
     docker:
-      - image: circleci/ruby:2.5-node
+      - image: circleci/ruby:2.6-node
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -44,3 +41,13 @@ jobs:
       - run: ./cc-test-reporter before-build
       - run: bin/rails test
       - run: ./cc-test-reporter after-build --id $CODECLIMATE_REPO_TOKEN
+
+workflows:
+  version: 2
+
+  commit:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: master

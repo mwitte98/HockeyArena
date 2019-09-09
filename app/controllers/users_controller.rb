@@ -41,6 +41,7 @@ class UsersController < ApplicationController
 
   def signed_in_user
     return if signed_in?
+
     flash[:warning] = 'You must be signed in to access that page.'
     redirect_to root_url
   end

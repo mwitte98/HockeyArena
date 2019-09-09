@@ -3,6 +3,7 @@ module PlayersHelper
     minutes = player['minutes']
     games = player['games']
     return 0 if minutes.zero? || games.zero?
+
     format '%.2f', minutes.to_f / games
   end
 
