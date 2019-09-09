@@ -1,9 +1,6 @@
 version: 2
 jobs:
   build:
-    branches:
-      ignore:
-        - master
     working_directory: ~/HockeyArena
     docker:
       - image: circleci/ruby:2.6-node
@@ -50,4 +47,7 @@ workflows:
 
   commit:
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              ignore: master
