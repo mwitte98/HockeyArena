@@ -6,7 +6,7 @@ jobs:
         - master
     working_directory: ~/HockeyArena
     docker:
-      - image: circleci/ruby:2.5-node
+      - image: circleci/ruby:2.6-node
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3

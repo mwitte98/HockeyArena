@@ -2,8 +2,8 @@
 <%= form_tag('/youth_school', method: 'get', class: 'form-group', style: 'float: left; margin-bottom: 0; padding-right: 15px;') do %>
   <%= select_tag(:manager, options_for_select([['speedysportwhiz'], ['magicspeedo']], params[:manager]), {class: 'form-control', style: 'display: initial; width: 140px; margin-bottom: 0'}) %>
   <%= select_tag(:version, options_for_select([['live'], ['beta']], params[:version]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
-  <%= select_tag(:type, options_for_select([['ys'], ['draft']], params[:type]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
   <%= select_tag(:team, options_for_select([['a'], ['b']], params[:team]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
+  <%= select_tag(:type, options_for_select([['ys'], ['draft']], params[:type]), {class: 'form-control', style: 'display: initial; width: 60px; margin-bottom: 0'}) %>
   <%= submit_tag('Go', class: 'btn btn-md btn-primary') %>
 <% end %>
 <table id="youthTable" style="margin-top: 20px">
@@ -36,13 +36,13 @@
           <% end %>
         <% end %>
         <% @ai_array[index].each do |ai| %>
-          <% if (player.age == 16 and ai >= 49) or (player.age == 17 and ai >= 78) or (player.age == 18 and ai >= 111) %>
+          <% if (player.age == 16 and ai >= 49) or (player.age == 17 and ai >= 79) or (player.age == 18 and ai >= 109) %>
             <td class="blue"><%= ai %></td>
-          <% elsif (player.age == 16 and ai >= 47) or (player.age == 17 and ai >= 76) or (player.age == 18 and ai >= 103) %>
+          <% elsif (player.age == 16 and ai >= 48) or (player.age == 17 and ai >= 76) or (player.age == 18 and ai >= 103) %>
             <td class="green"><%= ai %></td>
-          <% elsif (player.age == 16 and ai <= 5) or (player.age == 17 and ai <= 31) %>
+          <% elsif (player.age == 16 and ai <= 5) or (player.age == 17 and ai <= 31) or (player.age == 18 and ai <= 57) %>
             <td class="red"><%= ai %></td>
-          <% elsif (player.age == 16 and ai <= 7) or (player.age == 17 and ai <= 33) or (player.age == 18 and ai <= 62) %>
+          <% elsif (player.age == 16 and ai <= 7) or (player.age == 17 and ai <= 34) or (player.age == 18 and ai <= 62) %>
             <td class="orange"><%= ai %></td>
           <% else %>
             <td><%= ai %></td>
