@@ -18,6 +18,7 @@ gem 'mechanize', '2.7.6'
 gem 'nokogiri', '1.10.4'
 gem 'non-stupid-digest-assets', '1.0.9'
 gem 'pg', '1.1.4'
+gem 'puma', '4.1.0'
 gem 'rubyXL', '3.4.6'
 gem 'sass-rails', '6.0.0'
 gem 'sprockets', '3.7.2'
@@ -35,9 +36,4 @@ group :test do
   gem 'minitest-reporters', '1.4.0.beta1'
   gem 'shoulda', '3.6.0'
   gem 'simplecov', '0.17.0'
-end
-
-group :production do
-  gem 'rails_12factor', '0.0.3'
-  gem 'unicorn', '5.5.1'
 end
