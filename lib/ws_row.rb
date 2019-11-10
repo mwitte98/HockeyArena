@@ -14,15 +14,15 @@ module WsRow
     update_attrs player, hash
   end
 
-  def self.player_hash
+  def self.daily_row
     @sheet = State.sheet
     @row = State.row
     hash = {
       ai: 3, stadium: 6, goalie: 8, defense: 9, offense: 10, shooting: 11, passing: 12, speed: 13,
-      strength: 14, selfcontrol: 15, playertype: 16, experience: 17, games: 22, minutes: 23
+      strength: 14, selfcontrol: 15, experience: 17, games: 22, minutes: 23
     }
 
-    generate_player_hash hash
+    generate_daily_row hash
   end
 
   def self.name
@@ -45,6 +45,10 @@ module WsRow
     State.sheet[State.row, 6] = value
   end
 
+  def self.playertype
+    State.sheet[State.row, 16]
+  end
+
   def self.id
     State.sheet[State.row, 28]
   end
@@ -63,12 +67,12 @@ module WsRow
     end
   end
 
-  private_class_method def self.generate_player_hash(hash)
-    generated_hash = {}
+  private_class_method def self.generate_daily_row(hash)
+    generated_row = []
     hash.each_key do |key|
       value = @sheet[@row, hash[key]]
-      generated_hash[key] = key == :playertype ? value : value.to_i
+      generated_row << value.to_i
     end
-    generated_hash
+    generated_row
   end
 end
