@@ -9,14 +9,12 @@ class UpdateJob
   end
 
   def perform
+    update 'speedysportwhiz', 'beta', 'a'
+    update 'speedysportwhiz', 'beta', 'b'
     update 'speedysportwhiz', 'live', 'a'
     update 'speedysportwhiz', 'live', 'b'
     update 'magicspeedo', 'live', 'a'
     update 'magicspeedo', 'live', 'b'
-    update 'speedysportwhiz', 'beta', 'a'
-    update 'speedysportwhiz', 'beta', 'b'
-    update 'magicspeedo', 'beta', 'a'
-    update 'magicspeedo', 'beta', 'b'
   end
 
   private
@@ -65,12 +63,12 @@ class UpdateJob
   end
 
   def run_updates(team)
+    UpdateYS.run @agent, team
     if State.version == 'live' && team == 'a'
       UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
       UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
       UpdateNT.run @agent, @ws_sr, 'senior'
     end
-    UpdateYS.run @agent, team
   end
 
   def get_first_worksheet(session, key)

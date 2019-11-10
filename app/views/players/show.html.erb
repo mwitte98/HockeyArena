@@ -1,6 +1,6 @@
 <% provide(:title, @player.name) %>
 <h2><a href="http://www.hockeyarena.net/en/index.php?p=public_player_info.inc&id=<%= @player.playerid %>" target="_blank"><%= @player.name %></a></h2>
-<h4><%= @player.daily.to_a.last.second["playertype"] %>: <%= @player.quality %>/<%= @player.potential %></h4>
+<h4><%= @player.playertype %>: <%= @player.quality %>/<%= @player.potential %></h4>
 
 <head>
   <script type="text/javascript">
@@ -65,7 +65,6 @@
     <th>Spe</th>
     <th>Str</th>
     <th>SCo</th>
-    <th>Type</th>
     <th>Exp</th>
     <th>Calc AI</th>
     <th>AI Diff</th>
@@ -78,90 +77,87 @@
     <% @dates.each_with_index do |date, index| %>
     <tr>
         <% if index >= @dates.count - 1 %>
-        <td><%= @player.daily[date]["ai"] %></td>
-        <td class="stadium"><%= @player.daily[date]["stadium"] %></td>
+        <td><%= @player.daily[date][0] %></td>
+        <td class="stadium"><%= @player.daily[date][1] %></td>
         <td class="minutes"><%= average_minutes(@player.daily[date]) %></td>
-        <td><%= @player.daily[date]["goalie"] %></td>
-        <td><%= @player.daily[date]["defense"] %></td>
-        <td><%= @player.daily[date]["offense"] %></td>
-        <td><%= @player.daily[date]["shooting"] %></td>
-        <td><%= @player.daily[date]["passing"] %></td>
-        <td><%= @player.daily[date]["speed"] %></td>
-        <td><%= @player.daily[date]["strength"] %></td>
-        <td><%= @player.daily[date]["selfcontrol"] %></td>
-        <td><%= @player.daily[date]["playertype"] %></td>
-        <td><%= @player.daily[date]["experience"] %></td>
+        <td><%= @player.daily[date][2] %></td>
+        <td><%= @player.daily[date][3] %></td>
+        <td><%= @player.daily[date][4] %></td>
+        <td><%= @player.daily[date][5] %></td>
+        <td><%= @player.daily[date][6] %></td>
+        <td><%= @player.daily[date][7] %></td>
+        <td><%= @player.daily[date][8] %></td>
+        <td><%= @player.daily[date][9] %></td>
+        <td><%= @player.daily[date][10] %></td>
         <% else %>
-        <% if @player.daily[date]["ai"] - @player.daily[@dates[index+1]]["ai"] > 0 %>
-            <td class="darkgreen"><%= @player.daily[date]["ai"] %></td>
+        <% if @player.daily[date][0] - @player.daily[@dates[index+1]][0] > 0 %>
+            <td class="darkgreen"><%= @player.daily[date][0] %></td>
         <% else %>
-            <td><%= @player.daily[date]["ai"] %></td>
+            <td><%= @player.daily[date][0] %></td>
         <% end %>
 
-        <td class="stadium"><%= @player.daily[date]["stadium"] %></td>
+        <td class="stadium"><%= @player.daily[date][1] %></td>
 
         <td class="minutes"><%= average_minutes(@player.daily[date]) %></td>
 
-        <% if @player.daily[date]["goalie"].nil? || @player.daily[@dates[index+1]]["goalie"].nil? || @player.daily[date]["goalie"] - @player.daily[@dates[index+1]]["goalie"] < 1 %>
-            <td><%= @player.daily[date]["goalie"] %></td>
+        <% if @player.daily[date][2].nil? || @player.daily[@dates[index+1]][2].nil? || @player.daily[date][2] - @player.daily[@dates[index+1]][2] < 1 %>
+            <td><%= @player.daily[date][2] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["goalie"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][2] %></td>
         <% end %>
 
-        <% if @player.daily[date]["defense"].nil? || @player.daily[@dates[index+1]]["defense"].nil? || @player.daily[date]["defense"] - @player.daily[@dates[index+1]]["defense"] < 1 %>
-            <td><%= @player.daily[date]["defense"] %></td>
+        <% if @player.daily[date][3].nil? || @player.daily[@dates[index+1]][3].nil? || @player.daily[date][3] - @player.daily[@dates[index+1]][3] < 1 %>
+            <td><%= @player.daily[date][3] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["defense"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][3] %></td>
         <% end %>
 
-        <% if @player.daily[date]["offense"].nil? || @player.daily[@dates[index+1]]["offense"].nil? || @player.daily[date]["offense"] - @player.daily[@dates[index+1]]["offense"] < 1 %>
-            <td><%= @player.daily[date]["offense"] %></td>
+        <% if @player.daily[date][4].nil? || @player.daily[@dates[index+1]][4].nil? || @player.daily[date][4] - @player.daily[@dates[index+1]][4] < 1 %>
+            <td><%= @player.daily[date][4] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["offense"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][4] %></td>
         <% end %>
 
-        <% if @player.daily[date]["shooting"].nil? || @player.daily[@dates[index+1]]["shooting"].nil? || @player.daily[date]["shooting"] - @player.daily[@dates[index+1]]["shooting"] < 1 %>
-            <td><%= @player.daily[date]["shooting"] %></td>
+        <% if @player.daily[date][5].nil? || @player.daily[@dates[index+1]][5].nil? || @player.daily[date][5] - @player.daily[@dates[index+1]][5] < 1 %>
+            <td><%= @player.daily[date][5] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["shooting"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][5] %></td>
         <% end %>
 
-        <% if @player.daily[date]["passing"].nil? || @player.daily[@dates[index+1]]["passing"].nil? || @player.daily[date]["passing"] - @player.daily[@dates[index+1]]["passing"] < 1 %>
-            <td><%= @player.daily[date]["passing"] %></td>
+        <% if @player.daily[date][6].nil? || @player.daily[@dates[index+1]][6].nil? || @player.daily[date][6] - @player.daily[@dates[index+1]][6] < 1 %>
+            <td><%= @player.daily[date][6] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["passing"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][6] %></td>
         <% end %>
 
-        <% if @player.daily[date]["speed"].nil? || @player.daily[@dates[index+1]]["speed"].nil? || @player.daily[date]["speed"] - @player.daily[@dates[index+1]]["speed"] < 1 %>
-            <td><%= @player.daily[date]["speed"] %></td>
+        <% if @player.daily[date][7].nil? || @player.daily[@dates[index+1]][7].nil? || @player.daily[date][7] - @player.daily[@dates[index+1]][7] < 1 %>
+            <td><%= @player.daily[date][7] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["speed"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][7] %></td>
         <% end %>
 
-        <% if @player.daily[date]["strength"].nil? || @player.daily[@dates[index+1]]["strength"].nil? || @player.daily[date]["strength"] - @player.daily[@dates[index+1]]["strength"] < 1 %>
-            <td><%= @player.daily[date]["strength"] %></td>
+        <% if @player.daily[date][8].nil? || @player.daily[@dates[index+1]][8].nil? || @player.daily[date][8] - @player.daily[@dates[index+1]][8] < 1 %>
+            <td><%= @player.daily[date][8] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["strength"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][8] %></td>
         <% end %>
 
-        <% if @player.daily[date]["selfcontrol"].nil? || @player.daily[@dates[index+1]]["selfcontrol"].nil? || @player.daily[date]["selfcontrol"] - @player.daily[@dates[index+1]]["selfcontrol"] < 1 %>
-            <td><%= @player.daily[date]["selfcontrol"] %></td>
+        <% if @player.daily[date][9].nil? || @player.daily[@dates[index+1]][9].nil? || @player.daily[date][9] - @player.daily[@dates[index+1]][9] < 1 %>
+            <td><%= @player.daily[date][9] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["selfcontrol"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][9] %></td>
         <% end %>
 
-        <td><%= @player.daily[date]["playertype"] %></td>
-
-        <% if @player.daily[date]["experience"].nil? || @player.daily[@dates[index+1]]["experience"].nil? || @player.daily[date]["experience"] - @player.daily[@dates[index+1]]["experience"] < 1 %>
-            <td><%= @player.daily[date]["experience"] %></td>
+        <% if @player.daily[date][10].nil? || @player.daily[@dates[index+1]][10].nil? || @player.daily[date][10] - @player.daily[@dates[index+1]][10] < 1 %>
+            <td><%= @player.daily[date][10] %></td>
         <% else %>
-            <td class="darkgreen"><%= @player.daily[date]["experience"] %></td>
+            <td class="darkgreen"><%= @player.daily[date][10] %></td>
         <% end %>
         <% end %>
         <td><%= calculate_ai(@player.daily[date]) %></td>
-        <td class="ai_diff"><%= @player.daily[date]["ai"] - calculate_ai(@player.daily[date]) %></td>
-        <td><%= @player.daily[date]["games"] %></td>
-        <td><%= @player.daily[date]["minutes"] %></td>
+        <td class="ai_diff"><%= @player.daily[date][0] - calculate_ai(@player.daily[date]) %></td>
+        <td><%= @player.daily[date][11] %></td>
+        <td><%= @player.daily[date][12] %></td>
         <td><%= date.to_datetime.strftime("%m/%d/%Y %I:%M%p") %></td>
     </tr>
     <% end %>
