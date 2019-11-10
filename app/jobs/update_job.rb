@@ -64,11 +64,11 @@ class UpdateJob
 
   def run_updates(team)
     UpdateYS.run @agent, team
-    if State.version == 'live' && team == 'a'
-      UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
-      UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
-      UpdateNT.run @agent, @ws_sr, 'senior'
-    end
+    return unless State.version == 'live' && team == 'a'
+
+    UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
+    UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
+    UpdateNT.run @agent, @ws_sr, 'senior'
   end
 
   def get_first_worksheet(session, key)

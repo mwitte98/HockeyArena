@@ -86,14 +86,16 @@ module UpdateNT
     def create_nt_player(datetime)
       Player.create!(
         playerid: WsRow.id, name: WsRow.name, age: WsRow.age, quality: WsRow.quality,
-        potential: WsRow.potential, team: State.team, playertype: WsRow.playertype, daily: { datetime => WsRow.daily_row })
+        potential: WsRow.potential, team: State.team, playertype: WsRow.playertype,
+        daily: { datetime => WsRow.daily_row })
     end
 
     def update_nt_player(nt_player, datetime)
       ai_hash = nt_player['daily']
       ai_hash[datetime] = WsRow.daily_row
       nt_player.update(
-        age: WsRow.age, quality: WsRow.quality, potential: WsRow.potential, playertype: WsRow.playertype, daily: ai_hash)
+        age: WsRow.age, quality: WsRow.quality, potential: WsRow.potential,
+        playertype: WsRow.playertype, daily: ai_hash)
     end
 
     def synchronize_sheet
