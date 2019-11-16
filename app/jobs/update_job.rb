@@ -19,29 +19,25 @@ class UpdateJob
 
   private
 
-  def update(manager, version, team)
+  def update(manager, version, ab_team)
     State.manager = manager
     State.version = version
-    if team == 'a'
-      go_to_homepage
+    State.ab_team = ab_team
+
+    if ab_team == 'a'
+      @agent = Mechanize.new
+      @agent.get(base_url)
+      login_to_ha
       return if login_failed?
     else
-      switch_teams
+      @agent.get(base_url + 'index.php&p=sponsor_multiteam.inc&a=switch&team=2')
     end
-    run_updates team
+    run_updates ab_team
   end
 
-  def go_to_homepage
-    @agent = Mechanize.new
+  def base_url
     prefix = State.version == 'live' ? 'www' : 'beta'
-    @agent.get('http://' + prefix + '.hockeyarena.net/en/')
-    login_to_ha
-  end
-
-  def switch_teams
-    prefix = State.version == 'live' ? 'www' : 'beta'
-    @agent.get(
-      'http://' + prefix + '.hockeyarena.net/en/index.php&p=sponsor_multiteam.inc&a=switch&team=2')
+    'http://' + prefix + '.hockeyarena.net/en/'
   end
 
   def login_to_ha
@@ -62,9 +58,9 @@ class UpdateJob
     false
   end
 
-  def run_updates(team)
-    UpdateYS.run @agent, team
-    return unless State.version == 'live' && team == 'a'
+  def run_updates(ab_team)
+    UpdateYS.run @agent, ab_team
+    return unless State.version == 'live'
 
     UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
     UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
