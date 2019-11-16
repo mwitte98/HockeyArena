@@ -4,17 +4,11 @@ module State
 
     def update_row?(row_num)
       @row = row_num
-      is_b_sheet = @sheet[@row, 31].downcase == 'b'
+      is_b_sheet = @sheet[@row, 31].casecmp? 'b'
       is_b_team = @ab_team == 'b'
       is_y = @sheet[@row, 30] == 'y'
       is_senior_team = @team == 'senior'
 
-      update_row_for_state? is_b_sheet, is_b_team, is_y, is_senior_team
-    end
-
-    private
-
-    def update_row_for_state?(is_b_sheet, is_b_team, is_y, is_senior_team)
       if @sheet[@row, 28] == ''
         false
       elsif is_b_sheet != is_b_team
