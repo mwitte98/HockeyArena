@@ -19,16 +19,17 @@ class UpdateJob
 
   private
 
-  def update(manager, version, team)
+  def update(manager, version, ab_team)
     State.manager = manager
     State.version = version
-    if team == 'a'
+    State.ab_team = ab_team
+    if ab_team == 'a'
       go_to_homepage
       return if login_failed?
     else
       switch_teams
     end
-    run_updates team
+    run_updates ab_team
   end
 
   def go_to_homepage
@@ -62,9 +63,9 @@ class UpdateJob
     false
   end
 
-  def run_updates(team)
-    UpdateYS.run @agent, team
-    return unless State.version == 'live' && team == 'a'
+  def run_updates(ab_team)
+    UpdateYS.run @agent, ab_team
+    return unless State.version == 'live'
 
     UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
     UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
