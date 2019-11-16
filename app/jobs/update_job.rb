@@ -26,16 +26,16 @@ class UpdateJob
 
     if ab_team == 'a'
       @agent = Mechanize.new
-      @agent.get(get_base_url)
+      @agent.get(base_url)
       login_to_ha
       return if login_failed?
     else
-      @agent.get(get_base_url + 'index.php&p=sponsor_multiteam.inc&a=switch&team=2')
+      @agent.get(base_url + 'index.php&p=sponsor_multiteam.inc&a=switch&team=2')
     end
     run_updates ab_team
   end
 
-  def get_base_url
+  def base_url
     prefix = State.version == 'live' ? 'www' : 'beta'
     'http://' + prefix + '.hockeyarena.net/en/'
   end
