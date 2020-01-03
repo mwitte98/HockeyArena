@@ -70,6 +70,8 @@ module UpdateNT
 
       # stadium training
       stadium_training = stadium_attributes[3]
+      return if stadium_training.nil?
+
       WsRow.stadium = stadium_training[0] == '0' ? 0 : stadium_training[0..2]
     end
 
