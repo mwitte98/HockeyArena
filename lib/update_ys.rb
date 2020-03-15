@@ -11,17 +11,12 @@ module UpdateYS
     private
 
     def go_to_ys_page
-      if State.version == 'live'
-        @agent.get('http://www.hockeyarena.net/en/index.php?p=manager_youth_school_form.php')
-      else
-        @agent.get('http://beta.hockeyarena.net/en/index.php?p=manager_youth_school_form.php')
-      end
+      prefix = State.version == 'live' ? 'www' : 'beta'
+      @agent.get("http://#{prefix}.hockeyarena.net/en/index.php?p=manager_youth_school_form.php")
     end
 
     def update_ys(is_draft)
       @is_draft = is_draft
-      # don't update if draft and draft has happened
-      return if @is_draft && @agent.page.search('#table-2 .thead td').size > 8
 
       # get data from page
       players = scrape_ys_players
@@ -37,26 +32,32 @@ module UpdateYS
       search_string = @is_draft ? '#table-3 tbody tr, #table-2 tbody tr' : '#table-1 tbody tr'
 
       players = @agent.page.search(search_string).map do |player|
+        id = get_id player
         attributes = player.text.tr("\u00A0", ' ').strip.split("\r\n").map(&:strip)
-        attributes - ['']
+        [id] + attributes - ['']
       end
       players
     end
 
-    def remove_deleted_ys_players(players)
-      names = players.map { |player| player[0] }
-
-      # Names of all players that have been tracked
-      names_in_db = find_ys_player_names
-
-      # Delete players from db that have been deleted on HA
-      (names_in_db - names).each { |name| find_ys_player(name).delete }
+    def get_id(player)
+      children = player.children.select { |child| child.class == Nokogiri::XML::Element }
+      children.last.children.first.get_attribute 'id'
     end
 
-    def find_ys_player_names
+    def remove_deleted_ys_players(players)
+      ids = players.map { |player| player[0] }
+
+      # IDs of all players that have been tracked
+      ids_in_db = find_ys_player_ids
+
+      # Delete players from db that have been deleted on HA
+      (ids_in_db - ids).each { |id| find_ys_player(id).delete }
+    end
+
+    def find_ys_player_ids
       YouthSchool.where(
         manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team
-      ).pluck(:name)
+      ).pluck(:playerid)
     end
 
     def update_db(players)
@@ -71,24 +72,26 @@ module UpdateYS
       end
     end
 
-    def find_ys_player(name)
+    def find_ys_player(id)
       YouthSchool.find_by(
-        name: name, manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team
+        playerid: id, manager: State.manager, version: State.version,
+        draft: @is_draft, team: @ab_team
       )
     end
 
     def create_ys_player(player, datetime)
       YouthSchool.create!(
-        name: player[0], age: player[1], quality: player[2], potential: player[3],
-        talent: player[4], ai: { datetime => player[5] },
+        playerid: player[0], name: player[1], age: player[2], quality: player[3],
+        potential: player[4], talent: player[5], ai: { datetime => player[6] },
         manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team)
     end
 
     def update_ys_player(player, ys_player, datetime)
       ai_hash = ys_player['ai']
-      ai_hash[datetime] = player[5]
+      ai_hash[datetime] = player[6]
       ys_player.update(
-        age: player[1], quality: player[2], potential: player[3], talent: player[4], ai: ai_hash)
+        name: player[1], age: player[2], quality: player[3],
+        potential: player[4], talent: player[5], ai: ai_hash)
     end
   end
 end

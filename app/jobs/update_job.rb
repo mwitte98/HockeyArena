@@ -28,10 +28,11 @@ class UpdateJob
       @agent = Mechanize.new
       @agent.get(base_url)
       login_to_ha
-      return if login_failed?
     else
       @agent.get(base_url + 'index.php&p=sponsor_multiteam.inc&a=switch&team=2')
     end
+    return if login_failed?
+
     run_updates ab_team
   end
 
@@ -50,7 +51,7 @@ class UpdateJob
   def login_failed?
     sleep 1
     content = @agent.page.content
-    if content.include?('Continue')
+    if content.include?('Continue') || content.include?('Sign into the game')
       puts "*****Login to HA failed for #{State.manager} #{State.version}*****"
       puts content
       return true
