@@ -26,8 +26,8 @@ module UpdateNT
       # update player attributes and click on team name link
       update_nt_player_attributes
 
-      # go to player's team's stadium page
-      go_to_stadium_page
+      # if u23, go to main team's page
+      u23_check
 
       # update player's team stadium
       update_nt_player_stadium
@@ -58,14 +58,47 @@ module UpdateNT
       page.link_with(text: player_team).click
     end
 
-    def go_to_stadium_page
-      team_id = @agent.current_page.uri.to_s[77..-1]
-      @agent.get(
-        "http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}"
-      )
+    def u23_check
+      page = @agent.page
+      # check if u23 team
+      return unless page.image_urls.any? { |img| img.path.include?('nat68.gif') }
+
+      # get manager
+      manager_link = page.links.find { |link| link_text_includes? link, 'manager_info.php' }
+      return unless manager_link
+
+      # go to manager page
+      u23_team_id = team_id
+      manager_link.click
+      go_to_main_team u23_team_id
+    end
+
+    def go_to_main_team(u23_team_id)
+      team_links = @agent.page.links.select do |link|
+        link_text_includes? link, 'public_team_info_basic.php'
+      end
+      current_team = team_links.find do |link|
+        link_text_includes? link, "public_team_info_basic.php&team_id=#{u23_team_id}"
+      end
+      if current_team.text.upcase == 'A U23'
+        team_links.first.click
+      else
+        team_links.second.click
+      end
+    end
+
+    def link_text_includes?(link, text)
+      link.uri.query&.include?(text)
+    end
+
+    def team_id
+      @agent.current_page.uri.to_s[77..-1]
     end
 
     def update_nt_player_stadium
+      @agent.get(
+        "http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}"
+      )
       stadium_attributes = @agent.page.search('.sr1 .yspscores').map { |area| area.text.strip }
 
       # stadium training
