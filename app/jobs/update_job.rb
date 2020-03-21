@@ -42,6 +42,7 @@ class UpdateJob
   end
 
   def login_to_ha
+    @agent.get(base_url)
     form = @agent.page.forms.first
     form.nick = State.manager
     form.password = State.version == 'live' ? ENV['HA_password'] : ENV['beta_password']
