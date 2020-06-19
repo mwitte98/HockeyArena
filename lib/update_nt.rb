@@ -92,7 +92,7 @@ module UpdateNT
     end
 
     def team_id
-      @agent.current_page.uri.to_s[77..-1]
+      @agent.current_page.uri.to_s[78..-1]
     end
 
     def update_nt_player_stadium
