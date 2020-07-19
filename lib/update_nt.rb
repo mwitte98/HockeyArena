@@ -92,13 +92,11 @@ module UpdateNT
     end
 
     def team_id
-      @agent.current_page.uri.to_s[78..-1]
+      @agent.current_page.uri.to_s[78..]
     end
 
     def update_nt_player_stadium
-      @agent.get(
-        "http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}"
-      )
+      @agent.get("http://www.hockeyarena.net/en/index.php?p=public_team_info_stadium.php&team_id=#{team_id}")
       stadium_attributes = @agent.page.search('.sr1 .yspscores').map { |area| area.text.strip }
 
       # stadium training
@@ -120,9 +118,8 @@ module UpdateNT
 
     def create_nt_player(datetime)
       Player.create!(
-        playerid: WsRow.id, name: WsRow.name, age: WsRow.age, quality: WsRow.quality,
-        potential: WsRow.potential, team: State.team, playertype: WsRow.playertype,
-        daily: { datetime => WsRow.daily_row })
+        playerid: WsRow.id, name: WsRow.name, age: WsRow.age, quality: WsRow.quality, potential: WsRow.potential,
+        team: State.team, playertype: WsRow.playertype, daily: { datetime => WsRow.daily_row })
     end
 
     def update_nt_player(nt_player, datetime)

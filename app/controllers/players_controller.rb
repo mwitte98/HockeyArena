@@ -42,7 +42,7 @@ class PlayersController < ApplicationController
   def get_last_two(daily)
     keys = []
     daily.keys.sort.each { |key| keys << key }
-    dates = keys[-2..-1]
+    dates = keys[-2..]
     dates = keys if dates.nil?
     player = []
     dates.each { |date| player << daily[date] }

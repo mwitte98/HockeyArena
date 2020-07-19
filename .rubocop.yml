@@ -8,17 +8,13 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'db/**/*'
+    - 'regression/**/*'
     - 'config/unicorn.rb'
+  NewCops: enable
   TargetRubyVersion: 2.7
-
-Layout/LineLength:
-  Max: 100
 
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
-
-Metrics/AbcSize:
-  Max: 15
 
 Metrics/MethodLength:
   Max: 15
@@ -36,12 +32,6 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 
 Style/HashEachMethods:
-  Enabled: true
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
   Enabled: true
 
 Style/MutableConstant:

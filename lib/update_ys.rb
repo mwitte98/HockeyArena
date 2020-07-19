@@ -74,8 +74,7 @@ module UpdateYS
 
     def find_ys_player(id)
       YouthSchool.find_by(
-        playerid: id, manager: State.manager, version: State.version,
-        draft: @is_draft, team: @ab_team
+        playerid: id, manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team
       )
     end
 
@@ -90,8 +89,7 @@ module UpdateYS
       ai_hash = ys_player['ai']
       ai_hash[datetime] = player[6]
       ys_player.update(
-        name: player[1], age: player[2], quality: player[3],
-        potential: player[4], talent: player[5], ai: ai_hash)
+        name: player[1], age: player[2], quality: player[3], potential: player[4], talent: player[5], ai: ai_hash)
     end
   end
 end
