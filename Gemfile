@@ -28,7 +28,7 @@ gem 'uglifier', '4.2.0'
 
 group :development do
   gem 'debase', '0.2.4.1'
-  gem 'rubocop', '0.80.1'
+  gem 'rubocop', '0.86.0'
   gem 'ruby-debug-ide', '0.7.2'
 end
 
