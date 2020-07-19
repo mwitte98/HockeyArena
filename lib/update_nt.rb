@@ -64,7 +64,7 @@ module UpdateNT
       return unless page.image_urls.any? { |img| img.path.include?('nat68.gif') }
 
       # get manager
-      manager_link = page.links.find { |link| link_text_includes? link, 'manager_info.php' }
+      manager_link = page.links.find { |link| link_text_includes?(link, 'manager_info.php') && link.text != 'Info' }
       return unless manager_link
 
       # go to manager page
