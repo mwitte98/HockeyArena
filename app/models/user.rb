@@ -10,7 +10,7 @@ class User < ActiveRecord::Base
 
   def certain_email
     errors.add(:email, "doesn't have permission to sign up for this site") unless
-      email.casecmp('mcw9612@rit.edu') || email.casecmp('tyler.azevedo@gmail.com')
+      email.casecmp('mcw9612@rit.edu') || email.casecmp('elawless1@gmail.com')
   end
 
   def self.new_remember_token
