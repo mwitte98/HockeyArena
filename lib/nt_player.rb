@@ -35,7 +35,8 @@ class NtPlayer
   end
 
   def minutes
-    return_stat 2
+    minutes_string = return_stat 2
+    minutes_string.include?('(') ? minutes_string.split(' ')[0] : minutes_string
   end
 
   private
