@@ -31,12 +31,11 @@ module UpdateYS
     def scrape_ys_players
       search_string = @is_draft ? '#table-3 tbody tr, #table-2 tbody tr' : '#table-1 tbody tr'
 
-      players = @agent.page.search(search_string).map do |player|
+      @agent.page.search(search_string).map do |player|
         id = get_id player
         attributes = player.text.tr("\u00A0", ' ').strip.split("\r\n").map(&:strip)
         [id] + attributes - ['']
       end
-      players
     end
 
     def get_id(player)

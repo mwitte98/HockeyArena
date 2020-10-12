@@ -29,7 +29,7 @@ class UpdateJob
       @agent.get(base_url)
       login_to_ha
     else
-      @agent.get(base_url + 'index.php&p=sponsor_multiteam.inc&a=switch&team=2')
+      @agent.get("#{base_url}index.php&p=sponsor_multiteam.inc&a=switch&team=2")
     end
     return if login_failed?
 
@@ -38,7 +38,7 @@ class UpdateJob
 
   def base_url
     prefix = State.version == 'live' ? 'www' : 'beta'
-    'http://' + prefix + '.hockeyarena.net/en/'
+    "http://#{prefix}.hockeyarena.net/en/"
   end
 
   def login_to_ha
