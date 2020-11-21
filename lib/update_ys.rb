@@ -33,8 +33,8 @@ module UpdateYS
 
       @agent.page.search(search_string).map do |player|
         id = get_id player
-        attributes = player.text.tr("\u00A0", ' ').strip.split("\r\n").map(&:strip)
-        [id] + attributes - ['']
+        attributes = player.children.map(&:text).map { |a| a.tr("\u00A0", '') }.map(&:strip).reject(&:blank?)
+        [id] + attributes
       end
     end
 
