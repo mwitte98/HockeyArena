@@ -39,7 +39,7 @@ module UpdateYS
     end
 
     def get_id(player)
-      children = player.children.select { |child| child.class == Nokogiri::XML::Element }
+      children = player.children.select { |child| child.instance_of?(Nokogiri::XML::Element) }
       children.last.children.first.get_attribute 'id'
     end
 

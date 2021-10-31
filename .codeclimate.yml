@@ -52,7 +52,7 @@ plugins:
     enabled: true
   rubocop:
     enabled: true
-    channel: rubocop-0-92
+    channel: rubocop-1-9-1
   scss-lint:
     enabled: true
 exclude_patterns:
@@ -63,3 +63,4 @@ exclude_patterns:
 - 'log/**/*'
 - 'tmp/**/*'
 - 'vendor/**/*'
+- 'regression/**/*'
