@@ -2,6 +2,8 @@ version: 2
 jobs:
   build:
     working_directory: ~/HockeyArena
+    environment:
+      - CC_TEST_REPORTER_ID: $CODECLIMATE_REPO_TOKEN
     docker:
       - image: circleci/ruby:3.0.2-node
         environment:
