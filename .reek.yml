@@ -24,3 +24,4 @@ detectors:
 
 exclude_paths:
   - db/
+  - regression/

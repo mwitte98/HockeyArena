@@ -9,9 +9,7 @@ module State
       is_y = @sheet[@row, 30] == 'y'
       is_senior_team = @team == 'senior'
 
-      if @sheet[@row, 28] == ''
-        false
-      elsif is_b_sheet != is_b_team
+      if @sheet[@row, 28] == '' || is_b_sheet != is_b_team
         false
       elsif @manager == 'speedysportwhiz'
         is_senior_team == is_y
