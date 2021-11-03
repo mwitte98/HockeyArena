@@ -10,18 +10,18 @@ module UpdateNT
     private
 
     def update_national_team
-      (2..State.sheet.num_rows).each do |row_num|
+      (2..State.sheet.num_rows).each do
         begin # rubocop:disable Style/RedundantBegin
-          update_player row_num
+          update_player
         rescue Nokogiri::XML::XPath::SyntaxError
           redo
         end
       end
     end
 
-    def update_player(row_num)
+    def update_player
       # mark player as deleted if he doesn't exist anymore
-      return if !State.update_row?(row_num) || player_retired?
+      return if player_retired?
 
       # update player attributes and click on team name link
       update_nt_player_attributes

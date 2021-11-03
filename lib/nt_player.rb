@@ -3,10 +3,6 @@ class NtPlayer
 
   def initialize(player_attributes)
     @player_attributes = player_attributes
-    player_team = player_attributes[5]
-    manager = State.manager
-    @is_on_team = (manager == 'speedysportwhiz' && player_team == 'RIT Tigers') ||
-                  (manager == 'magicspeedo' && player_team == 'McDeedo Punch')
     @is_scouted = player_attributes.size > 35
   end
 
@@ -50,7 +46,7 @@ class NtPlayer
   end
 
   def return_stat(offset)
-    if @is_scouted && @is_on_team
+    if @is_scouted && player_attributes[5] == 'RIT Tigers'
       player_attributes[34 + offset]
     elsif @is_scouted
       player_attributes[31 + offset]
