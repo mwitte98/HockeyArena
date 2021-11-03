@@ -25,7 +25,7 @@ class YouthSchoolController < ApplicationController
 
   def format_dates(dates)
     dates.sort.each do |key|
-      time = key.to_time.getgm + 1.days
+      time = Time.zone.parse(key)
       @dates << "#{time.day}.#{time.month}"
     end
   end

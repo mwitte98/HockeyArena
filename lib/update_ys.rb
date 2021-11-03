@@ -58,13 +58,12 @@ module UpdateYS
     end
 
     def update_db(players)
-      datetime = Time.now.in_time_zone('Eastern Time (US & Canada)')
       players.each do |player|
         ys_player = find_ys_player player[0]
         if ys_player.nil?
-          create_ys_player player, datetime
+          create_ys_player player
         else
-          update_ys_player player, ys_player, datetime
+          update_ys_player player, ys_player
         end
       end
     end
@@ -73,16 +72,16 @@ module UpdateYS
       YouthSchool.find_by(playerid: id, version: State.version, draft: @is_draft, team: @ab_team)
     end
 
-    def create_ys_player(player, datetime)
+    def create_ys_player(player)
       YouthSchool.create!(
         playerid: player[0], name: player[1], age: player[2], quality: player[3],
-        potential: player[4], talent: player[5], ai: { datetime => player[6] },
+        potential: player[4], talent: player[5], ai: { Time.zone.now => player[6] },
         version: State.version, draft: @is_draft, team: @ab_team)
     end
 
-    def update_ys_player(player, ys_player, datetime)
+    def update_ys_player(player, ys_player)
       ai_hash = ys_player['ai']
-      ai_hash[datetime] = player[6]
+      ai_hash[Time.zone.now] = player[6]
       ys_player.update(
         name: player[1], age: player[2], quality: player[3], potential: player[4], talent: player[5], ai: ai_hash)
     end

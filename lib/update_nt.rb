@@ -10,12 +10,11 @@ module UpdateNT
     private
 
     def update_national_team
-      (2..State.sheet.num_rows).each do
-        begin # rubocop:disable Style/RedundantBegin
-          update_player
-        rescue Nokogiri::XML::XPath::SyntaxError
-          redo
-        end
+      (2..State.sheet.num_rows).each do |row_num|
+        State.row = row_num
+        update_player
+      rescue Nokogiri::XML::XPath::SyntaxError
+        redo
       end
     end
 
@@ -108,23 +107,22 @@ module UpdateNT
 
     def update_nt_player_in_db
       nt_player = Player.find_by(playerid: WsRow.id, team: State.team)
-      datetime = Time.now.in_time_zone('Eastern Time (US & Canada)')
       if nt_player.nil?
-        create_nt_player datetime
+        create_nt_player
       else
-        update_nt_player nt_player, datetime
+        update_nt_player nt_player
       end
     end
 
-    def create_nt_player(datetime)
+    def create_nt_player
       Player.create!(
         playerid: WsRow.id, name: WsRow.name, age: WsRow.age, quality: WsRow.quality, potential: WsRow.potential,
-        team: State.team, playertype: WsRow.playertype, daily: { datetime => WsRow.daily_row })
+        team: State.team, playertype: WsRow.playertype, daily: { Time.zone.now => WsRow.daily_row })
     end
 
-    def update_nt_player(nt_player, datetime)
+    def update_nt_player(nt_player)
       ai_hash = nt_player['daily']
-      ai_hash[datetime] = WsRow.daily_row
+      ai_hash[Time.zone.now] = WsRow.daily_row
       nt_player.update(
         age: WsRow.age, quality: WsRow.quality, potential: WsRow.potential,
         playertype: WsRow.playertype, daily: ai_hash)
