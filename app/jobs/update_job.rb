@@ -58,7 +58,7 @@ class UpdateJob
 
   def run_updates(ab_team)
     UpdateYS.run @agent, ab_team
-    return unless State.version == 'live'
+    return unless State.version == 'live' && State.ab_team == 'a'
 
     UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
     UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
