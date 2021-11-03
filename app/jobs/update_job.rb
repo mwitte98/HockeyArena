@@ -14,7 +14,6 @@ class UpdateJob
     update 'speedysportwhiz', 'live', 'a'
     update 'speedysportwhiz', 'live', 'b'
     update 'magicspeedo', 'live', 'a'
-    update 'magicspeedo', 'live', 'b'
   end
 
   private
