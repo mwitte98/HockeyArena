@@ -9,17 +9,15 @@ class UpdateJob
   end
 
   def perform
-    update 'speedysportwhiz', 'beta', 'a'
-    update 'speedysportwhiz', 'beta', 'b'
-    update 'speedysportwhiz', 'live', 'a'
-    update 'speedysportwhiz', 'live', 'b'
-    update 'magicspeedo', 'live', 'a'
+    update 'beta', 'a'
+    update 'beta', 'b'
+    update 'live', 'a'
+    update 'live', 'b'
   end
 
   private
 
-  def update(manager, version, ab_team)
-    State.manager = manager
+  def update(version, ab_team)
     State.version = version
     State.ab_team = ab_team
 
@@ -43,7 +41,7 @@ class UpdateJob
   def login_to_ha
     @agent.get(base_url)
     form = @agent.page.forms.first
-    form.nick = State.manager
+    form.nick = 'speedysportwhiz'
     form.password = State.version == 'live' ? ENV['HA_password'] : ENV['beta_password']
     form.submit
   end
@@ -52,7 +50,7 @@ class UpdateJob
     sleep 1
     content = @agent.page.content
     if content.include?('Continue') || content.include?('Sign into the game')
-      puts "*****Login to HA failed for #{State.manager} #{State.version}*****"
+      puts "*****Login to HA failed for #{State.version}*****"
       puts content
       return true
     end
