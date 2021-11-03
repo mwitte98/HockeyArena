@@ -5,7 +5,6 @@ class UpdateJob
     session = GoogleDrive::Session.from_service_account_key(StringIO.new(ENV['client_secret']))
     @ws_u20_active = get_first_worksheet session, ENV['U20_20_key']
     @ws_u20_next = get_first_worksheet session, ENV['U20_18_key']
-    @ws_sr = get_first_worksheet session, ENV['NT_key']
   end
 
   def perform
@@ -63,7 +62,6 @@ class UpdateJob
 
     UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
     UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
-    UpdateNT.run @agent, @ws_sr, 'senior'
   end
 
   def get_first_worksheet(session, key)
