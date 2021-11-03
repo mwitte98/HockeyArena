@@ -54,9 +54,7 @@ module UpdateYS
     end
 
     def find_ys_player_ids
-      YouthSchool.where(
-        manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team
-      ).pluck(:playerid)
+      YouthSchool.where(version: State.version, draft: @is_draft, team: @ab_team).pluck(:playerid)
     end
 
     def update_db(players)
@@ -72,16 +70,14 @@ module UpdateYS
     end
 
     def find_ys_player(id)
-      YouthSchool.find_by(
-        playerid: id, manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team
-      )
+      YouthSchool.find_by(playerid: id, version: State.version, draft: @is_draft, team: @ab_team)
     end
 
     def create_ys_player(player, datetime)
       YouthSchool.create!(
         playerid: player[0], name: player[1], age: player[2], quality: player[3],
         potential: player[4], talent: player[5], ai: { datetime => player[6] },
-        manager: State.manager, version: State.version, draft: @is_draft, team: @ab_team)
+        version: State.version, draft: @is_draft, team: @ab_team)
     end
 
     def update_ys_player(player, ys_player, datetime)

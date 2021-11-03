@@ -20,9 +20,7 @@ class YouthSchoolController < ApplicationController
   end
 
   def players
-    YouthSchool.where(
-      manager: params[:manager], version: params[:version], draft: params[:type] == 'draft', team: params[:team]
-    )
+    YouthSchool.where(version: params[:version], draft: params[:type] == 'draft', team: params[:team])
   end
 
   def format_dates(dates)

@@ -9,8 +9,7 @@ class User < ActiveRecord::Base
   validate :certain_email
 
   def certain_email
-    errors.add(:email, "doesn't have permission to sign up for this site") unless
-      email.casecmp('mcw9612@rit.edu') || email.casecmp('elawless1@gmail.com')
+    errors.add(:email, "doesn't have permission to sign up for this site") unless email.casecmp('mcw9612@rit.edu')
   end
 
   def self.new_remember_token
