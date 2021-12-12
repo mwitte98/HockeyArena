@@ -1,26 +1,20 @@
 class UpdateJob
   include SuckerPunch::Job
 
-  def initialize
-    session = GoogleDrive::Session.from_service_account_key(StringIO.new(ENV['client_secret']))
-    @ws_u20_active = get_first_worksheet session, ENV['U20_20_key']
-    @ws_u20_next = get_first_worksheet session, ENV['U20_18_key']
-  end
-
   def perform
-    update 'beta', 'a'
-    update 'beta', 'b'
-    update 'live', 'a'
-    update 'live', 'b'
+    %w[beta live].each do |version|
+      @version = version
+      %w[a b].each do |ab_team|
+        @ab_team = ab_team
+        update
+      end
+    end
   end
 
   private
 
-  def update(version, ab_team)
-    State.version = version
-    State.ab_team = ab_team
-
-    if ab_team == 'a'
+  def update
+    if @ab_team == 'a'
       @agent = Mechanize.new
       @agent.get(base_url)
       login_to_ha
@@ -29,11 +23,13 @@ class UpdateJob
     end
     return if login_failed?
 
-    run_updates ab_team
+    go_to_ys_page
+    update_ys false # update ys
+    update_ys true # update draft
   end
 
   def base_url
-    prefix = State.version == 'live' ? 'www' : 'beta'
+    prefix = @version == 'live' ? 'www' : 'beta'
     "http://#{prefix}.hockeyarena.net/en/"
   end
 
@@ -41,7 +37,7 @@ class UpdateJob
     @agent.get(base_url)
     form = @agent.page.forms.first
     form.nick = 'speedysportwhiz'
-    form.password = State.version == 'live' ? ENV['HA_password'] : ENV['beta_password']
+    form.password = @version == 'live' ? ENV['HA_password'] : ENV['beta_password']
     form.submit
   end
 
@@ -49,22 +45,86 @@ class UpdateJob
     sleep 1
     content = @agent.page.content
     if content.include?('Continue') || content.include?('Sign into the game')
-      puts "*****Login to HA failed for #{State.version}*****"
+      puts "*****Login to HA failed for #{@version}*****"
       puts content
       return true
     end
     false
   end
 
-  def run_updates(ab_team)
-    UpdateYS.run @agent, ab_team
-    return unless State.version == 'live' && State.ab_team == 'a'
-
-    UpdateNT.run @agent, @ws_u20_active, ENV['U20_20_seasons']
-    UpdateNT.run @agent, @ws_u20_next, ENV['U20_18_seasons']
+  def go_to_ys_page
+    prefix = @version == 'live' ? 'www' : 'beta'
+    @agent.get("http://#{prefix}.hockeyarena.net/en/index.php?p=manager_youth_school_form.php")
   end
 
-  def get_first_worksheet(session, key)
-    session.spreadsheet_by_key(key).worksheets[0]
+  def update_ys(is_draft)
+    @is_draft = is_draft
+
+    # get data from page
+    players = scrape_ys_players
+
+    # delete players in db that are no longer in ys/draft
+    remove_deleted_ys_players players
+
+    # add current ai to db
+    update_db players
+  end
+
+  def scrape_ys_players
+    search_string = @is_draft ? '#table-3 tbody tr, #table-2 tbody tr' : '#table-1 tbody tr'
+
+    @agent.page.search(search_string).map do |player|
+      id = get_id player
+      attributes = player.children.map(&:text).map { |text| text.tr("\u00A0", '') }.map(&:strip).reject(&:blank?)
+      [id] + attributes
+    end
+  end
+
+  def get_id(player)
+    children = player.children.select { |child| child.instance_of?(Nokogiri::XML::Element) }
+    children.last.children.first.get_attribute 'id'
+  end
+
+  def remove_deleted_ys_players(players)
+    ids = players.map { |player| player[0] }
+
+    # IDs of all players that have been tracked
+    ids_in_db = find_ys_player_ids
+
+    # Delete players from db that have been deleted on HA
+    (ids_in_db - ids).each { |id| find_ys_player(id).delete }
+  end
+
+  def find_ys_player_ids
+    YouthSchool.where(version: @version, draft: @is_draft, team: @ab_team).pluck(:playerid)
+  end
+
+  def update_db(players)
+    players.each do |player|
+      ys_player = find_ys_player player[0]
+      if ys_player.nil?
+        create_ys_player player
+      else
+        update_ys_player player, ys_player
+      end
+    end
+  end
+
+  def find_ys_player(id)
+    YouthSchool.find_by(playerid: id, version: @version, draft: @is_draft, team: @ab_team)
+  end
+
+  def create_ys_player(player)
+    YouthSchool.create!(
+      playerid: player[0], name: player[1], age: player[2], quality: player[3],
+      potential: player[4], talent: player[5], ai: { Time.zone.now => player[6] },
+      version: @version, draft: @is_draft, team: @ab_team)
+  end
+
+  def update_ys_player(player, ys_player)
+    ai_hash = ys_player['ai']
+    ai_hash[Time.zone.now] = player[6]
+    ys_player.update(
+      name: player[1], age: player[2], quality: player[3], potential: player[4], talent: player[5], ai: ai_hash)
   end
 end
