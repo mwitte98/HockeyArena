@@ -10,23 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_03_002707) do
+ActiveRecord::Schema.define(version: 2021_11_07_225446) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "players", id: :serial, force: :cascade do |t|
-    t.integer "playerid"
-    t.string "name", limit: 255
-    t.integer "age"
-    t.integer "quality"
-    t.string "potential", limit: 255
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string "team"
-    t.json "daily"
-    t.string "playertype"
-  end
 
   create_table "users", id: :serial, force: :cascade do |t|
     t.string "name", limit: 255
