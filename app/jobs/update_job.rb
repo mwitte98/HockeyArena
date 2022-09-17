@@ -37,7 +37,7 @@ class UpdateJob
     @agent.get(base_url)
     form = @agent.page.forms.first
     form.nick = 'speedysportwhiz'
-    form.password = @version == 'live' ? ENV['HA_password'] : ENV['beta_password']
+    form.password = @version == 'live' ? ENV.fetch('HA_password') : ENV.fetch('beta_password')
     form.submit
   end
 

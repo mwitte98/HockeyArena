@@ -2,10 +2,8 @@ version: 2
 jobs:
   build:
     working_directory: ~/HockeyArena
-    environment:
-      - CC_TEST_REPORTER_ID: $CODECLIMATE_REPO_TOKEN
     docker:
-      - image: circleci/ruby:3.0.2-node
+      - image: cimg/ruby:3.1.2-node
         environment:
           BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
@@ -13,7 +11,7 @@ jobs:
           PGHOST: 127.0.0.1
           PGUSER: HockeyArena
           RAILS_ENV: test
-      - image: circleci/postgres:12.4
+      - image: cimg/postgres:12.9
         environment:
           POSTGRES_USER: HockeyArena
           POSTGRES_DB: db/hockey_arena_test_db
@@ -21,29 +19,27 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - HockeyArena-{{ checksum "Gemfile.lock" }}
             - HockeyArena-
-
-      - run: bundle check || bundle install
-
+      - run:
+          name: Install gems
+          command: |
+            echo 'export BUNDLER_VERSION=$(cat Gemfile.lock | tail -1 | tr -d " ")' >> $BASH_ENV
+            source $BASH_ENV
+            gem install bundler
+            bundle check || bundle install
       - save_cache:
           key: HockeyArena-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
-
-      - run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-      - run: chmod +x ./cc-test-reporter
-
-      - run: dockerize -wait tcp://localhost:5432 -timeout 1m
-
-      - run: bin/rails db:schema:load --trace
-
-      - run: ./cc-test-reporter before-build
-      - run: bin/rails test
-      - run: ./cc-test-reporter after-build --id $CODECLIMATE_REPO_TOKEN
+      - run:
+          name: Run backend tests
+          command: |
+            bundle exec rake db:schema:load --trace
+            bundle exec rake
+      - run: bundle exec rubocop
 
 workflows:
   version: 2

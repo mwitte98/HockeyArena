@@ -1,7 +1,4 @@
 [![CircleCI](https://circleci.com/gh/mwitte98/HockeyArena.svg?style=svg)](https://circleci.com/gh/mwitte98/HockeyArena)
-[![Code Climate](https://codeclimate.com/github/mwitte98/HockeyArena/badges/gpa.svg)](https://codeclimate.com/github/mwitte98/HockeyArena)
-[![Test Coverage](https://codeclimate.com/github/mwitte98/HockeyArena/badges/coverage.svg)](https://codeclimate.com/github/mwitte98/HockeyArena/coverage)
-[![Issue Count](https://codeclimate.com/github/mwitte98/HockeyArena/badges/issue_count.svg)](https://codeclimate.com/github/mwitte98/HockeyArena)
 
 # Hockey Arena
 
