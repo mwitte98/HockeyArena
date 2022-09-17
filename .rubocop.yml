@@ -11,7 +11,7 @@ AllCops:
     - 'regression/**/*'
     - 'config/unicorn.rb'
   NewCops: enable
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.1
 
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
