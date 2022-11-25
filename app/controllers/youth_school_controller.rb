@@ -32,7 +32,7 @@ class YouthSchoolController < ApplicationController
 
   def prepare_tables
     @players.each do |player|
-      player_ai = player.ai.map { |_key, value| value.to_i }
+      player_ai = player.ai.map { |_key, value| value }
       @ai_array << player_ai
       calculate_calculations(player_ai)
     end
