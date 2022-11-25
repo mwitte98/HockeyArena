@@ -187,5 +187,4 @@ test:
 production:
   clients:
     default:
-      database: hockey_arena_production
       uri: <%= ENV['MONGODB_URI'] %>
