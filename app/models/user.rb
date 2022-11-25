@@ -1,4 +1,9 @@
-class User < ActiveRecord::Base
+class User
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Attributes::Dynamic
+  include ActiveModel::SecurePassword
+
   before_save { self.email = email.downcase }
   before_create :create_remember_token
   validates :name, presence: true, length: { maximum: 50 }
@@ -7,6 +12,9 @@ class User < ActiveRecord::Base
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }
   validate :certain_email
+
+  index({ email: 1 }, { unique: true })
+  index({ remember_token: 1 })
 
   def certain_email
     errors.add(:email, "doesn't have permission to sign up for this site") unless email.casecmp('mcw9612@rit.edu')
