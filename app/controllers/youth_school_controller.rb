@@ -1,5 +1,5 @@
 class YouthSchoolController < ApplicationController
-  before_action :signed_in_user
+  before_action :signed_in_user, only: :show
 
   def show
     @players = players.sort_by { |player| player.ai.length }
@@ -8,6 +8,10 @@ class YouthSchoolController < ApplicationController
     @calculations = []
     format_dates @players.last&.ai&.keys || []
     prepare_tables
+  end
+
+  def update
+    UpdateJob.perform_async
   end
 
   private
