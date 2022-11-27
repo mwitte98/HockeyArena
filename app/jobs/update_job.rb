@@ -2,6 +2,7 @@ class UpdateJob
   include SuckerPunch::Job
 
   def perform
+    puts 'Starting update of YouthSchool data'
     %w[beta live].each do |version|
       @version = version
       %w[a b].each do |ab_team|
@@ -9,6 +10,7 @@ class UpdateJob
         update
       end
     end
+    puts 'Finished update of YouthSchool data'
   end
 
   private

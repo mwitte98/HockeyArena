@@ -7,5 +7,6 @@ Rails.application.routes.draw do
   match '/signin', to: 'sessions#new', via: :get
   match '/signout', to: 'sessions#destroy', via: :delete
   match '/youth_school', to: 'youth_school#show', via: :get, as: 'ys'
+  match '/youth_school', to: 'youth_school#update', via: :put
   match '*path', to: 'static_pages#home', via: :get
 end

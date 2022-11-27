@@ -21,7 +21,5 @@ module HockeyArena
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-    #
-    config.autoload_paths << Rails.root.join('lib')
   end
 end

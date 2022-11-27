@@ -16,6 +16,9 @@ AllCops:
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 
+Metrics/ClassLength:
+  Max: 125
+
 Metrics/MethodLength:
   Max: 15
 
