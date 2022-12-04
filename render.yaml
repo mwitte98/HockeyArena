@@ -6,5 +6,6 @@ services:
     name: speedysportwhiz
     env: docker # valid values: https://render.com/docs/yaml-spec#environment
     dockerfilePath: Dockerfile.render
+    region: ohio # optional; defaults to oregon
     plan: free # optional; defaults to starter
     numInstances: 1
