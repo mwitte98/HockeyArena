@@ -21,5 +21,10 @@ module HockeyArena
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
+
+    # Prepend all log lines with the following tags.
+    config.log_tags = [:request_id, :remote_ip, proc do |request|
+      request.headers.select { |key, _value| key.start_with?('HTTP') && key != 'HTTP_COOKIE' }.to_a.to_s
+    end]
   end
 end
