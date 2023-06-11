@@ -18,7 +18,6 @@ class UpdateJob
   def update
     if @ab_team == 'a'
       @agent = Mechanize.new
-      @agent.get(base_url)
       login_to_ha
     else
       @agent.get("#{base_url}index.php&p=sponsor_multiteam.inc&a=switch&team=2")
@@ -36,7 +35,7 @@ class UpdateJob
   end
 
   def login_to_ha
-    @agent.get(base_url)
+    @agent.get("#{base_url}login")
     form = @agent.page.forms.first
     form.nick = 'speedysportwhiz'
     form.password = @version == 'live' ? ENV.fetch('HA_password') : ENV.fetch('beta_password')
