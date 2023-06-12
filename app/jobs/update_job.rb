@@ -45,7 +45,7 @@ class UpdateJob
   def login_failed?
     sleep 1
     content = @agent.page.content
-    if content.include?('Continue') || content.include?('Sign into the game')
+    if content.include?('Sign into the game')
       puts "*****Login to HA failed for #{@version}*****"
       puts content
       return true
