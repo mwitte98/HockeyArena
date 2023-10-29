@@ -68,4 +68,9 @@ Rails.application.configure do
     logger.formatter = config.log_formatter
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
+
+  # Prepend all log lines with the following tags.
+  config.log_tags = [:request_id, :remote_ip, proc do |request|
+    request.headers.select { |key, _value| key.start_with?('HTTP') && key != 'HTTP_COOKIE' }.to_a.to_s
+  end]
 end
