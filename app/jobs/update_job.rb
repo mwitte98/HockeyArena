@@ -45,7 +45,7 @@ class UpdateJob
   def login_failed?
     sleep 1
     content = @agent.page.content
-    if content.include?('Sign into the game')
+    if content.include?('Sign into the game') || content.include?('We are performing maintenance on the servers')
       puts "*****Login to HA failed for #{@version}*****"
       puts content
       return true
@@ -64,9 +64,6 @@ class UpdateJob
     # get data from page
     players = scrape_ys_players
 
-    # delete players in db that are no longer in ys/draft
-    remove_deleted_ys_players players
-
     # add current ai to db
     update_db players
   end
@@ -84,20 +81,6 @@ class UpdateJob
   def get_id(player)
     children = player.children.select { |child| child.instance_of?(Nokogiri::XML::Element) }
     children.last.children.first.get_attribute 'id'
-  end
-
-  def remove_deleted_ys_players(players)
-    ids = players.map { |player| player[0] }
-
-    # IDs of all players that have been tracked
-    ids_in_db = find_ys_player_ids
-
-    # Delete players from db that have been deleted on HA
-    (ids_in_db - ids).each { |id| find_ys_player(id).delete }
-  end
-
-  def find_ys_player_ids
-    YouthSchool.where(version: @version, draft: @is_draft, team: @ab_team).pluck(:playerid)
   end
 
   def update_db(players)
