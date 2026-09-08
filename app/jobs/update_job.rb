@@ -3,13 +3,13 @@ class UpdateJob
 
   def perform
     puts 'Starting update of YouthSchool data'
-    %w[beta live].each do |version|
-      @version = version
-      %w[a b].each do |ab_team|
-        @ab_team = ab_team
-        update
-      end
-    end
+    @version = 'beta'
+    @ab_team = 'a'
+    update
+    @version = 'live'
+    update
+    @ab_team = 'b'
+    update
     puts 'Finished update of YouthSchool data'
   end
 
