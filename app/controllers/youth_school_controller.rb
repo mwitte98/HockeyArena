@@ -24,9 +24,7 @@ class YouthSchoolController < ApplicationController
   end
 
   def players
-    YouthSchool.where(
-      version: params[:version], draft: params[:type] == 'draft', team: params[:team], :updated_at.gte => 1.day.ago
-    )
+    YouthSchool.where(version: params[:version], draft: params[:type] == 'draft', :updated_at.gte => 1.day.ago)
   end
 
   def format_dates(dates)
