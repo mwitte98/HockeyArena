@@ -4,11 +4,8 @@ class UpdateJob
   def perform
     puts 'Starting update of YouthSchool data'
     @version = 'beta'
-    @ab_team = 'a'
     update
     @version = 'live'
-    update
-    @ab_team = 'b'
     update
     puts 'Finished update of YouthSchool data'
   end
@@ -16,12 +13,8 @@ class UpdateJob
   private
 
   def update
-    if @ab_team == 'a'
-      @agent = Mechanize.new
-      login_to_ha
-    else
-      @agent.get("#{base_url}index.php&p=sponsor_multiteam.inc&a=switch&team=2")
-    end
+    @agent = Mechanize.new
+    login_to_ha
     return if login_failed?
 
     go_to_ys_page
@@ -95,14 +88,14 @@ class UpdateJob
   end
 
   def find_ys_player(id)
-    YouthSchool.find_by(playerid: id, version: @version, draft: @is_draft, team: @ab_team)
+    YouthSchool.find_by(playerid: id, version: @version, draft: @is_draft)
   end
 
   def create_ys_player(player)
     YouthSchool.create!(
       playerid: player[0], name: player[1], age: player[2].to_i, quality: player[3],
       potential: player[4], talent: player[5], ai: { Time.zone.now.to_s => player[6].to_i },
-      version: @version, draft: @is_draft, team: @ab_team)
+      version: @version, draft: @is_draft)
   end
 
   def update_ys_player(player, ys_player)
